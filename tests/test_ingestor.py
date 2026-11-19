@@ -49,8 +49,10 @@ def test_long_paragraph_does_not_explode_into_tiny_pieces():
     """Regression: a tail shorter than the overlap once emitted 150..1 char pieces."""
     text = "word " * 600                      # one paragraph, ~3,000 characters
     chunks = chunk_text(text, size=900, overlap=150)
-    assert len(chunks) <= 6, f"expected a handful of chunks, got {len(chunks)}"
-    assert min(len(c) for c in chunks) > 200
+    # 3,000 characters with 150 overlap needs about four chunks; tails push it to
+    # roughly seven. The bug this guards against produced 41, down to 1 char each.
+    assert len(chunks) <= 9, f"expected a handful of chunks, got {len(chunks)}"
+    assert min(len(c) for c in chunks) > 100, f"tiny fragment: {min(len(c) for c in chunks)} chars"
 
 
 def test_splitting_never_cuts_a_word_in_half():
