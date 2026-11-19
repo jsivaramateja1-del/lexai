@@ -110,3 +110,23 @@ def test_pipeline_trusts_the_agents_lexical_acceptance(monkeypatch):
     result = pipeline.answer_question("can I patent software")
     assert result["mode"] == "extractive"      # answered, not refused
     assert result["sources"][0]["page"] == 10
+
+
+def test_system_prompt_forbids_appending_the_refusal_to_an_answer():
+    """Observed in the running app: a correct answer followed by the refusal sentence."""
+    from src.generator import SYSTEM_PROMPT
+
+    assert "Never append the refusal sentence" in SYSTEM_PROMPT
+    assert "answer that part" in SYSTEM_PROMPT
+
+
+def test_context_numbers_every_passage_so_citations_are_checkable():
+    from src.generator import build_context
+
+    hits = [
+        {"text": "first", "source": "a.pdf", "page": 1},
+        {"text": "second", "source": "b.pdf", "page": 7},
+    ]
+    context = build_context(hits)
+    assert "[Passage 1] Source: a.pdf, page 1" in context
+    assert "[Passage 2] Source: b.pdf, page 7" in context

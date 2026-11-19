@@ -93,6 +93,9 @@ html,body,[class*="css"]{font-family:'Inter','Segoe UI',system-ui,-apple-system,
 .trace-q{color:var(--ink-2);}
 .trace-score{color:var(--ink);font-variant-numeric:tabular-nums;}
 .ok{color:var(--good);} .no{color:var(--bad);} .warn{color:var(--accent);}
+.badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;
+  border:1px solid var(--line);color:var(--accent);font-size:.68rem;letter-spacing:.03em;}
+.src-note{color:var(--ink-3);font-size:.74rem;margin:-2px 0 10px;}
 
 /* sidebar + controls */
 section[data-testid="stSidebar"]{background:var(--panel);border-right:1px solid var(--line);}
@@ -198,13 +201,19 @@ def source_cards(passages: list[dict]) -> None:
     if not passages:
         return
     with st.expander(f"Sources ({len(passages)})", expanded=False):
+        st.markdown(
+            "<p class='src-note'>A low similarity score is not a bad source: a passage can be "
+            "the right one because it contains the exact statutory phrase.</p>",
+            unsafe_allow_html=True,
+        )
         for hit in passages:
             snippet = " ".join(hit["text"].split())[:420]
             st.markdown(
                 f"""
                 <div class="src">
                   <div class="src-top">
-                    <span><b>{hit['source']}</b> · page {hit['page']}</span>
+                    <span><b>{hit['source']}</b> · page {hit['page']}
+                      <span class="badge">{hit.get('matched_by', 'vector')}</span></span>
                     <span>similarity {hit['score']:.3f} · distance {hit['distance']:.3f}</span>
                   </div>
                   <div class="src-body">{snippet} …</div>
