@@ -43,7 +43,54 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top-k", type=int, default=None, help="passages to retrieve")
     parser.add_argument("--limit", type=int, default=None, help="only the first N questions")
     parser.add_argument("--questions", default=str(QUESTIONS_FILE))
+    parser.add_argument("--threshold", type=float, default=None,
+                        help="override MAX_DISTANCE for this run")
+    parser.add_argument("--sweep", default="",
+                        help="comma-separated thresholds, e.g. 0.30,0.35,0.40: reports each")
     return parser.parse_args()
+
+
+def sweep(questions: list[dict], thresholds: list[float], top_k: int, config) -> None:
+    """Re-run the whole set at several thresholds and report the trade-off.
+
+    The refusal threshold is a policy choice, not a fact: lowering it answers more
+    questions and invents more answers. This prints both sides so the choice is
+    made from the evaluation set instead of from taste.
+    """
+    from src.pipeline import answer_question
+
+    print(f"{'thresh':<8}{'hit@k':<8}{'top-1':<8}{'answered':<10}{'refused ok':<12}{'false answers':<15}")
+    print("-" * 62)
+    for threshold in thresholds:
+        config.MAX_DISTANCE = threshold
+        config.STRONG_DISTANCE = max(0.05, threshold - 0.07)
+
+        hits = top1 = answered = refused_ok = false_answers = 0
+        answerable = [q for q in questions if q["answerable"]]
+        unanswerable = [q for q in questions if not q["answerable"]]
+
+        for item in answerable:
+            result = answer_question(item["question"], top_k=top_k)
+            pages = [hit["page"] for hit in result["passages"]]
+            if set(pages) & set(item["expected_pages"]):
+                hits += 1
+            if pages and pages[0] in item["expected_pages"]:
+                top1 += 1
+            if result["mode"] != "no_answer":
+                answered += 1
+        for item in unanswerable:
+            result = answer_question(item["question"], top_k=top_k)
+            if result["mode"] == "no_answer":
+                refused_ok += 1
+            else:
+                false_answers += 1
+
+        print(f"{threshold:<8.2f}{100 * hits / max(1, len(answerable)):<8.1f}"
+              f"{100 * top1 / max(1, len(answerable)):<8.1f}"
+              f"{answered}/{len(answerable):<8}"
+              f"{refused_ok}/{len(unanswerable):<10}"
+              f"{false_answers:<15}")
+    print("\nPick the threshold where 'answered' is high and 'false answers' is still 0.")
 
 
 def main() -> None:
@@ -57,6 +104,12 @@ def main() -> None:
     from src.pipeline import answer_question
     from src import retriever
 
+    import src.config as config
+
+    if args.threshold is not None:
+        config.MAX_DISTANCE = args.threshold
+        config.STRONG_DISTANCE = max(0.05, args.threshold - 0.07)
+
     top_k = args.top_k or TOP_K
     payload = json.loads(Path(args.questions).read_text(encoding="utf-8"))
     questions = payload["questions"]
@@ -69,6 +122,10 @@ def main() -> None:
         indexed = 0
     if indexed == 0:
         sys.exit("The vector store is empty. Run: python -m scripts.ingest --reset")
+
+    if args.sweep:
+        sweep(questions, [float(t) for t in args.sweep.split(",") if t.strip()], top_k, config)
+        return
 
     print(f"Mode: {'LLM answers' if args.llm else 'quote mode'} · top_k={top_k} · "
           f"{len(questions)} questions · {indexed} chunks indexed\n")
@@ -100,6 +157,9 @@ def main() -> None:
                 "refused": int(refused),
                 "mode": result["mode"],
                 "cited": int(cited),
+                "best_distance": round(result["passages"][0]["distance"], 3) if result["passages"] else "",
+                "best_score": round(result["passages"][0]["score"], 3) if result["passages"] else "",
+                "strong": int(bool(result.get("strong"))),
                 "attempts": len(result.get("trace", [])),
                 "latency_ms": elapsed,
             }
