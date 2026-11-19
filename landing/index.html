@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IP-SAKTI Sahayak — Source-cited answers on Indian IP law</title>
+  <meta name="description" content="IP-SAKTI Sahayak is a retrieval-augmented AI assistant that answers questions on Indian patents, trademarks and copyright using official documents, with page-level citations." />
+  <meta name="keywords" content="Indian patent law, trademark, copyright, RAG, AI assistant, IP knowledge base" />
+  <meta name="author" content="J. V. Audi Siva Rama Teja" />
+  <link rel="canonical" href="https://example.com/" />
+
+  <!-- Open Graph / social preview -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="IP-SAKTI Sahayak" />
+  <meta property="og:description" content="Ask about Indian IP law in plain language. Get answers grounded in official documents, with citations." />
+  <meta property="og:url" content="https://example.com/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">§</span>
+        IP-SAKTI Sahayak
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks">
+        Menu
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a class="btn btn-small" href="https://example.streamlit.app" target="_blank" rel="noopener">Open the app</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <h1>Ask about Indian IP law.<br />Get answers you can check.</h1>
+      <p class="lede">
+        IP-SAKTI Sahayak reads the Patents Act, the Trade Marks Act, the Copyright Act and
+        official IP office guidelines, then answers your question using only those documents —
+        with the document name and page number attached to every claim.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="https://example.streamlit.app" target="_blank" rel="noopener">Try the assistant</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <p class="disclaimer">General information, not legal advice.</p>
+    </section>
+
+    <section class="section" id="problem">
+      <h2>Why this exists</h2>
+      <div class="grid grid-3">
+        <article class="card">
+          <h3>Documents are scattered</h3>
+          <p>Statutes, rules, fee schedules and examination guidelines sit in different PDFs, each running to hundreds of pages.</p>
+        </article>
+        <article class="card">
+          <h3>Chatbots guess</h3>
+          <p>A general model will happily invent a section number. In a legal question, a confident wrong answer is worse than no answer.</p>
+        </article>
+        <article class="card">
+          <h3>Answers must be checkable</h3>
+          <p>Every response here points at the exact passage it came from, so you can read the original before you rely on it.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="how">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li><strong>Ingest.</strong> PDFs are extracted, cleaned and split into overlapping chunks, each tagged with its source and page.</li>
+        <li><strong>Embed.</strong> A local multilingual model turns every chunk into a vector that captures meaning, not just keywords.</li>
+        <li><strong>Retrieve.</strong> Your question becomes a vector too; the closest chunks come back from the vector database.</li>
+        <li><strong>Ground.</strong> Only those passages are sent to the language model, which must answer from them and cite them.</li>
+        <li><strong>Refuse.</strong> If nothing is close enough, the assistant says the documents do not cover it instead of guessing.</li>
+      </ol>
+    </section>
+
+    <section class="section" id="features">
+      <h2>What it does</h2>
+      <div class="grid grid-2">
+        <article class="card">
+          <h3>Cited answers</h3>
+          <p>Each claim carries a document name and page number, plus a similarity score you can inspect.</p>
+        </article>
+        <article class="card">
+          <h3>Honest refusals</h3>
+          <p>A relevance threshold stops the model from answering outside the knowledge base.</p>
+        </article>
+        <article class="card">
+          <h3>Multilingual questions</h3>
+          <p>Ask in Hindi, Tamil or English; the multilingual embedding model matches against the English text.</p>
+        </article>
+        <article class="card">
+          <h3>Usage analytics</h3>
+          <p>Every query is logged with latency and sources used, feeding a Power BI dashboard on real usage.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>CDS208 final project · Sai University · Built by J. V. Audi Siva Rama Teja</p>
+    <p class="disclaimer">General information extracted from public documents, not legal advice.</p>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

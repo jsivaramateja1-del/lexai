@@ -1,0 +1,134 @@
+:root {
+  --ink: #10202b;
+  --ink-soft: #4a5b68;
+  --paper: #fbfaf7;
+  --paper-alt: #f2efe8;
+  --line: #ddd8cc;
+  --accent: #0f6b5c;
+  --accent-soft: #d8ece6;
+  --radius: 14px;
+  --max: 1080px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.65;
+  font-size: 17px;
+}
+
+h1, h2, h3 { line-height: 1.2; margin: 0 0 .6em; }
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); letter-spacing: -.02em; }
+h2 { font-size: clamp(1.4rem, 3vw, 2rem); }
+h3 { font-size: 1.1rem; }
+p { margin: 0 0 1em; }
+
+.skip-link {
+  position: absolute; left: -999px; top: 0;
+  background: var(--accent); color: #fff; padding: .6rem 1rem; z-index: 10;
+}
+.skip-link:focus { left: 1rem; top: 1rem; }
+
+.site-header {
+  position: sticky; top: 0; z-index: 5;
+  background: rgba(251, 250, 247, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav {
+  max-width: var(--max); margin: 0 auto; padding: .9rem 1.25rem;
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+
+.brand {
+  font-weight: 650; text-decoration: none; color: var(--ink);
+  display: flex; align-items: center; gap: .5rem; margin-right: auto;
+}
+.brand-mark {
+  display: grid; place-items: center;
+  width: 30px; height: 30px; border-radius: 9px;
+  background: var(--accent); color: #fff; font-size: 1rem;
+}
+
+.nav-toggle {
+  display: none;
+  background: none; border: 1px solid var(--line); border-radius: 8px;
+  padding: .4rem .8rem; font: inherit; cursor: pointer; color: var(--ink);
+}
+
+.nav-links {
+  display: flex; align-items: center; gap: 1.2rem;
+  list-style: none; margin: 0; padding: 0;
+}
+.nav-links a { color: var(--ink-soft); text-decoration: none; font-size: .95rem; }
+.nav-links a:hover { color: var(--accent); }
+
+.btn {
+  display: inline-block; padding: .7rem 1.3rem; border-radius: 999px;
+  background: var(--accent); color: #fff; text-decoration: none;
+  font-weight: 600; font-size: .95rem; border: 1px solid var(--accent);
+  transition: transform .15s ease, opacity .15s ease;
+}
+.btn:hover { transform: translateY(-1px); opacity: .92; }
+.btn-ghost { background: transparent; color: var(--accent); }
+.btn-small { padding: .45rem .9rem; font-size: .85rem; }
+
+.hero {
+  max-width: var(--max); margin: 0 auto;
+  padding: clamp(3rem, 8vw, 6rem) 1.25rem 3rem;
+}
+.hero .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 62ch; }
+.hero-actions { display: flex; gap: .8rem; flex-wrap: wrap; margin: 1.6rem 0 1rem; }
+
+.disclaimer { font-size: .82rem; color: var(--ink-soft); }
+
+.section { max-width: var(--max); margin: 0 auto; padding: 3.5rem 1.25rem; }
+.section-alt { background: var(--paper-alt); max-width: none; }
+.section-alt > * { max-width: var(--max); margin-left: auto; margin-right: auto; }
+
+.grid { display: grid; gap: 1.1rem; }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+.card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.3rem 1.4rem;
+}
+.card p { color: var(--ink-soft); margin-bottom: 0; font-size: .95rem; }
+
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 0;
+  display: grid; gap: .9rem; max-width: 72ch; }
+.steps li {
+  counter-increment: step; position: relative; padding-left: 3rem;
+  color: var(--ink-soft); font-size: .97rem;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 0;
+  width: 2rem; height: 2rem; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: grid; place-items: center; font-weight: 700; font-size: .9rem;
+}
+.steps strong { color: var(--ink); }
+
+.site-footer {
+  border-top: 1px solid var(--line); margin-top: 2rem;
+  padding: 2rem 1.25rem; text-align: center; font-size: .88rem; color: var(--ink-soft);
+}
+.site-footer p { margin: .2em 0; }
+
+@media (max-width: 720px) {
+  .nav-toggle { display: block; }
+  .nav-links {
+    display: none; width: 100%; flex-direction: column;
+    align-items: flex-start; gap: .8rem; padding: .8rem 0 .4rem;
+  }
+  .nav-links.open { display: flex; }
+}

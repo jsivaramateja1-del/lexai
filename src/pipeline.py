@@ -1,0 +1,116 @@
+"""The pipeline: question in, grounded answer + citations out.
+
+Read this file top to bottom and you have the whole RAG idea:
+    retrieve -> check relevance -> build prompt -> generate -> log
+"""
+
+from __future__ import annotations
+
+import time
+
+from src import generator, retriever
+from src.config import DISCLAIMER, MAX_DISTANCE, TOP_K
+from src.logger import log_query, new_query_id
+
+NO_ANSWER = (
+    "The provided documents do not cover this. I can only answer from the "
+    "ingested IP documents."
+)
+
+
+def answer_question(
+    question: str,
+    history: list[dict] | None = None,
+    top_k: int = TOP_K,
+) -> dict:
+    """Run the full RAG loop and return a dict the UI can render directly."""
+    question = (question or "").strip()
+    query_id = new_query_id()
+    if not question:
+        return _result(query_id, "Please type a question.", [], "error", "empty question")
+
+    total_started = time.perf_counter()
+
+    # 1. Retrieve
+    retrieve_started = time.perf_counter()
+    hits = retriever.search(question, top_k=top_k)
+    retrieval_ms = int((time.perf_counter() - retrieve_started) * 1000)
+
+    # 2. Relevance guard: refuse instead of guessing
+    best_distance = hits[0]["distance"] if hits else 1.0
+    if not hits or best_distance > MAX_DISTANCE:
+        result = _result(
+            query_id, NO_ANSWER, hits, "no_answer", "",
+            retrieval_ms=retrieval_ms, total_ms=_elapsed(total_started),
+        )
+        log_query(_log_row(query_id, question, result, best_distance))
+        return result
+
+    # 3. Generate (LLM if configured, otherwise verbatim quotes)
+    llm_ms = 0
+    if generator.llm_available():
+        messages = generator.build_messages(question, hits, history)
+        reply = generator.call_llm(messages)
+        llm_ms = int(reply["latency_s"] * 1000)
+        if reply["error"]:
+            answer = generator.extractive_answer(question, hits)
+            mode, error = "extractive", reply["error"]
+            answer = f"(Model unavailable, showing source passages instead.)\n\n{answer}"
+        else:
+            answer, mode, error = reply["text"], "llm", ""
+    else:
+        answer, mode, error = generator.extractive_answer(question, hits), "extractive", ""
+
+    result = _result(
+        query_id, answer, hits, mode, error,
+        retrieval_ms=retrieval_ms, llm_ms=llm_ms, total_ms=_elapsed(total_started),
+    )
+    log_query(_log_row(query_id, question, result, best_distance))
+    return result
+
+
+def _elapsed(started: float) -> int:
+    return int((time.perf_counter() - started) * 1000)
+
+
+def _result(
+    query_id: str,
+    answer: str,
+    hits: list[dict],
+    mode: str,
+    error: str,
+    retrieval_ms: int = 0,
+    llm_ms: int = 0,
+    total_ms: int = 0,
+) -> dict:
+    return {
+        "query_id": query_id,
+        "answer": answer,
+        "mode": mode,
+        "error": error,
+        "sources": [
+            {"source": h["source"], "page": h["page"], "score": h["score"]}
+            for h in hits
+        ],
+        "passages": hits,
+        "retrieval_ms": retrieval_ms,
+        "llm_ms": llm_ms,
+        "total_ms": total_ms,
+        "disclaimer": DISCLAIMER,
+    }
+
+
+def _log_row(query_id: str, question: str, result: dict, best_distance: float) -> dict:
+    return {
+        "query_id": query_id,
+        "question": question,
+        "answer_mode": result["mode"],
+        "num_sources": len(result["sources"]),
+        "sources": " | ".join(f"{s['source']} p.{s['page']}" for s in result["sources"]),
+        "top_distance": round(best_distance, 4),
+        "retrieval_ms": result["retrieval_ms"],
+        "llm_ms": result["llm_ms"],
+        "total_ms": result["total_ms"],
+        "feedback": "",
+        "error": result["error"][:300],
+    }
