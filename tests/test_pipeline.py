@@ -116,8 +116,10 @@ def test_system_prompt_forbids_appending_the_refusal_to_an_answer():
     """Observed in the running app: a correct answer followed by the refusal sentence."""
     from src.generator import SYSTEM_PROMPT
 
-    assert "Never append the refusal sentence" in SYSTEM_PROMPT
-    assert "answer that part" in SYSTEM_PROMPT
+    flat = " ".join(SYSTEM_PROMPT.split())          # the prompt is line-wrapped
+    assert "Never append the refusal sentence" in flat
+    assert "answer that part" in flat
+    assert "cannot answer the question at all" in flat
 
 
 def test_context_numbers_every_passage_so_citations_are_checkable():
