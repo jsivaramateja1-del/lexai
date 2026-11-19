@@ -34,6 +34,13 @@ TOP_K = int(os.getenv("TOP_K", "5"))
 # Agentic retrieval: propose alternative search phrasings and retry while
 # the best passage is too far away. Bounded, so it cannot loop forever.
 AGENT_ENABLED = os.getenv("AGENT_ENABLED", "true").lower() == "true"
+
+# Hybrid retrieval: fuse vector similarity with a TF-IDF keyword index, because
+# legal questions hinge on exact statutory wording as well as on meaning.
+HYBRID_ENABLED = os.getenv("HYBRID_ENABLED", "true").lower() == "true"
+
+# Let a verbatim statutory phrase rescue a passage whose cosine score is weak.
+LEXICAL_ACCEPT = os.getenv("LEXICAL_ACCEPT", "true").lower() == "true"
 MAX_ATTEMPTS = int(os.getenv("MAX_ATTEMPTS", "4"))
 
 # Cosine distance above which we refuse to answer ("not in the knowledge base").

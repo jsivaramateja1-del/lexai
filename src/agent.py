@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import re
 
-from src import config, generator, retriever
+from src import config, generator, hybrid, retriever
 
 # Words that carry no retrieval value on their own.
 _STOPWORDS = {
@@ -190,8 +190,9 @@ def collect_evidence(
     top_k = top_k or config.TOP_K
 
     if not config.AGENT_ENABLED:
+        phrases = statutory_terms(question)
         hits = retriever.search(question, top_k=top_k)
-        accepted = bool(hits) and hits[0]["distance"] <= config.MAX_DISTANCE
+        accepted = bool(hits) and hybrid.should_accept(hits[0], question, phrases)
         return {
             "hits": hits,
             "accepted": accepted,
@@ -208,12 +209,13 @@ def collect_evidence(
         }
 
     plan = plan_queries(question, use_llm=use_llm)
+    phrases = statutory_terms(question)
     trace: list[dict] = []
     best: list[dict] = []
 
     for step, item in enumerate(plan, start=1):
         hits = retriever.search(item["query"], top_k=top_k)
-        accepted = bool(hits) and hits[0]["distance"] <= config.MAX_DISTANCE
+        accepted = bool(hits) and hybrid.should_accept(hits[0], question, phrases)
         trace.append(
             {
                 "step": step,
@@ -244,5 +246,6 @@ def describe_trace(trace: list[dict]) -> str:
     for step in trace:
         score = f"{step['top_score']:.3f}" if step["top_score"] is not None else "n/a"
         mark = "accepted" if step["accepted"] else "rejected"
-        parts.append(f"{step['source']} '{step['query'][:60]}' -> {score} {mark}")
+        via = step.get("matched_by") or "vector"
+        parts.append(f"{step['source']} '{step['query'][:60]}' -> {score} via {via} {mark}")
     return " | ".join(parts)

@@ -216,11 +216,12 @@ def trace_panel(result: dict) -> None:
         for step in trace:
             score = f"{step['top_score']:.3f}" if step["top_score"] is not None else "n/a"
             verdict = "<span class='ok'>accepted</span>" if step["accepted"] else "<span class='no'>rejected</span>"
+            via = step.get("matched_by") or "vector"
             rows.append(
                 f"<div class='trace-row'><span class='trace-step'>{step['step']}</span>"
                 f"<span class='trace-src'>{step['source']}</span>"
                 f"<span class='trace-q'>\"{step['query']}\"</span>"
-                f"<span class='trace-score'>p.{step['top_page']} · {score} · {verdict}</span></div>"
+                f"<span class='trace-score'>p.{step['top_page']} · {score} · {via} · {verdict}</span></div>"
             )
         st.markdown("".join(rows), unsafe_allow_html=True)
 

@@ -47,6 +47,7 @@ data/documents/*.pdf
 | `src/ingestor.py` | PDF extraction, cleaning, overlapping chunking |
 | `src/embedder.py` | One local embedding model for both documents and queries |
 | `src/agent.py` | Agentic retrieval: propose phrasings, retry while the best match is weak |
+| `src/hybrid.py` | Keyword index, reciprocal rank fusion, lexical relevance guard |
 | `src/retriever.py` | ChromaDB storage and top-k semantic search |
 | `src/generator.py` | Prompt construction and the single LLM call |
 | `src/pipeline.py` | retrieve → guard → generate → log |
@@ -122,7 +123,7 @@ Real numbers from the current build, one statute (Patents Act, 1970, as amended 
 | Embedding model | paraphrase-multilingual-MiniLM-L12-v2, local, 384 dimensions |
 | Rebuild time | ~22 s |
 | Refusal threshold | cosine distance 0.35 (similarity 0.65), calibrated from test questions |
-| Unit tests | 26 passing, plus one end-to-end smoke check |
+| Unit tests | 37 passing, plus one end-to-end smoke check |
 | Cost per answered question | roughly 2 paise at introductory Sarvam pricing |
 
 A chunk-size experiment (450/80, 900/150, 1400/200 against four fixed questions) chose the
@@ -149,6 +150,26 @@ The glossary exists because a statute says "computer programme per se" where a u
 "software". Dense retrieval often bridges that gap and often does not; one extra local search
 closes the whole class of misses, and a test asserts that "can I patent software" is planned
 with the statutory wording.
+
+## Hybrid retrieval
+
+Dense vectors are good at meaning and bad at exactness. "Can I patent software" returns
+pages about patent applications because the topic is patents; the exact phrase "computer
+programme per se" appears on one page of the Act and a vector search still missed it,
+because that chunk also contains a dozen other clauses and its vector is an average.
+
+So retrieval now fuses two rankings with Reciprocal Rank Fusion, which merges by rank
+rather than by score, so a cosine distance and a TF-IDF weight never need a shared scale:
+
+| Signal | Finds | Blind to |
+| --- | --- | --- |
+| Vector (sentence-transformers) | paraphrase, synonyms, meaning | exact rare wording |
+| Keyword (TF-IDF, 1-3 word n-grams) | statutory phrases, section wording | paraphrase |
+
+The relevance guard also gained a second route. A passage is accepted when its cosine
+distance is under the threshold **or** when it contains a statutory phrase the question maps
+to, because verbatim legal wording is stronger evidence than a mediocre similarity score.
+Both switches are configurable: `HYBRID_ENABLED`, `LEXICAL_ACCEPT`.
 
 ## Answer modes
 
