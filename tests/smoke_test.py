@@ -43,6 +43,11 @@ retriever.get_client.cache_clear()
 from src.ingestor import ingest_pdf  # noqa: E402
 import src.pipeline as pipeline  # noqa: E402
 
+# A test must control its own environment: never inherit thresholds from .env,
+# and never call a paid API. Otherwise the test result depends on your settings.
+pipeline.MAX_DISTANCE = 0.9
+pipeline.generator.llm_available = lambda: False
+
 # --- 2. build a two-page PDF that looks like a statute ---
 pdf_path = Path(tempfile.mkdtemp()) / "Patents_Act_sample.pdf"
 doc = pymupdf.open()

@@ -18,6 +18,14 @@ from src.config import CHUNK_OVERLAP, CHUNK_SIZE
 _MULTI_SPACE = re.compile(r"[ \t]+")
 _MULTI_NEWLINE = re.compile(r"\n{3,}")
 
+# Amendment footnotes and bare page numbers carry no legal meaning but are full of
+# words like "patentable" and "omitted", so they win similarity matches and then
+# mislead the model. Drop those lines before chunking.
+_FOOTNOTE = re.compile(
+    r"\b(Ins\.|Subs\.|Omitted|Added|Rep\.|w\.e\.f\.)\b|by Act \d+ of \d+",
+    re.IGNORECASE,
+)
+
 
 @dataclass
 class Chunk:
@@ -61,6 +69,7 @@ def clean_text(raw: str) -> str:
 
     - de-hyphenate words wrapped across lines  ("consti-\ntution" -> "constitution")
     - collapse runs of spaces and blank lines
+    - drop amendment footnotes and bare page numbers, which are noise for search
     - strip every line so stray indentation does not become fake paragraphs
     """
     text = raw.replace("\r\n", "\n").replace("\r", "\n")
@@ -68,7 +77,12 @@ def clean_text(raw: str) -> str:
     text = re.sub(r"-\n(?=[a-z])", "", text)             # wrapped words
     text = _MULTI_SPACE.sub(" ", text)
     text = _MULTI_NEWLINE.sub("\n\n", text)
-    return "\n".join(line.strip() for line in text.split("\n")).strip()
+    lines = [line.strip() for line in text.split("\n")]
+    kept = [
+        line for line in lines
+        if not (line and (line.isdigit() or _FOOTNOTE.search(line)))
+    ]
+    return _MULTI_NEWLINE.sub("\n\n", "\n".join(kept)).strip()
 
 
 # ---------------------------------------------------------------- chunking
