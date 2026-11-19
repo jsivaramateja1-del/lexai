@@ -91,3 +91,22 @@ def test_empty_question_is_rejected_before_any_work(monkeypatch):
     _no_log(monkeypatch)
     result = pipeline.answer_question("   ")
     assert result["mode"] == "error"
+
+
+def test_pipeline_trusts_the_agents_lexical_acceptance(monkeypatch):
+    """A weak cosine score plus a statutory phrase must still be answered."""
+    _no_log(monkeypatch)
+    weak = {"chunk_id": "a", "text": "(k) a computer programme per se", "source": "a.pdf",
+            "page": 10, "distance": 0.66, "score": 0.34}
+    monkeypatch.setattr(
+        pipeline.agent, "collect_evidence",
+        lambda question, top_k=None, use_llm=True: {
+            "hits": [weak], "accepted": True, "strong": True,
+            "trace": [{"step": 1, "query": question, "source": "original",
+                       "top_score": 0.34, "top_page": 10, "level": 2, "accepted": True}],
+        },
+    )
+    monkeypatch.setattr(pipeline.generator, "llm_available", lambda: False)
+    result = pipeline.answer_question("can I patent software")
+    assert result["mode"] == "extractive"      # answered, not refused
+    assert result["sources"][0]["page"] == 10

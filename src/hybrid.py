@@ -143,6 +143,26 @@ def fuse(vector_hits: list[dict], keyword_hits: list[dict], k: int = 60) -> list
     return fused
 
 
+def prefer_exact_phrase(fused: list[dict], query: str, min_words: int = 3) -> list[dict]:
+    """Float chunks that contain the query verbatim to the top, order preserved.
+
+    Reciprocal Rank Fusion is rank-based and therefore blind to the difference
+    between "matches the phrase" and "sits near it in vector space". For a legal
+    search that difference is the whole answer, so exact containment gets a tier
+    of its own. Short queries are skipped: "trade mark" would match everywhere.
+    """
+    needle = " ".join(query.lower().split())
+    if len(needle.split()) < min_words:
+        return fused
+    exact = [item for item in fused if needle in " ".join(item.get("text", "").lower().split())]
+    if not exact:
+        return fused
+    rest = [item for item in fused if item not in exact]
+    for item in exact:
+        item["matched_by"] = f"{item['matched_by']}+phrase"
+    return exact + rest
+
+
 # ------------------------------------------------------------- lexical evidence
 def lexical_evidence(text: str, phrases: list[str], question: str,
                      min_coverage: float = 0.75) -> float:
@@ -178,10 +198,14 @@ def accept_level(hit: dict, question: str, phrases: list[str]) -> int:
     if hit is None:
         return 0
 
-    if config.LEXICAL_ACCEPT and lexical_evidence(
-        hit.get("text", ""), phrases, question
-    ) >= 0.999:
-        return 2
+    if config.LEXICAL_ACCEPT:
+        haystack = hit.get("text", "").lower()
+        for phrase in phrases:
+            # A short phrase ("trade mark", "renewal fee") is ordinary vocabulary
+            # and appears across the whole statute. Only specific, multi-word
+            # phrasing ("computer programme per se") is decisive.
+            if len(phrase.split()) >= 3 and phrase.lower() in haystack:
+                return 2
 
     distance = hit.get("distance")
     if distance is None:

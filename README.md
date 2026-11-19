@@ -84,6 +84,7 @@ Run the tests:
 ```bash
 pytest -q
 python tests/smoke_check.py
+python tests/selfdrive.py        # whole system, real PDF, 41 checks
 ```
 
 ## Configuration
@@ -119,11 +120,11 @@ Real numbers from the current build, one statute (Patents Act, 1970, as amended 
 | Measure | Value |
 | --- | --- |
 | Pages extracted | 69 |
-| Chunks indexed | 507 (900 characters, 150 overlap, page-scoped, boundary-aware) |
+| Chunks indexed | 358 (900 characters, 150 overlap, page-scoped, word-aligned) |
 | Embedding model | paraphrase-multilingual-MiniLM-L12-v2, local, 384 dimensions |
 | Rebuild time | ~22 s |
 | Refusal threshold | cosine distance 0.35 (similarity 0.65), calibrated from test questions |
-| Unit tests | 42 passing, plus one end-to-end smoke check |
+| Unit tests | 47 passing, plus a smoke check and a 41-check system test drive |
 | Cost per answered question | roughly 2 paise at introductory Sarvam pricing |
 
 Chunks are cut at clause, sentence or word boundaries, never mid-word: an exact phrase like
@@ -169,6 +170,12 @@ rather than by score, so a cosine distance and a TF-IDF weight never need a shar
 | --- | --- | --- |
 | Vector (sentence-transformers) | paraphrase, synonyms, meaning | exact rare wording |
 | Keyword (TF-IDF, 1-3 word n-grams) | statutory phrases, section wording | paraphrase |
+| Exact-phrase tier | chunks containing the query verbatim | nothing, but needs a specific query |
+
+Rank fusion is rank-based and therefore blind to the difference between "matches the phrase"
+and "sits near it in vector space". For a legal search that difference is the answer, so a
+chunk containing the query verbatim is floated above the fused ranking — but only when the
+query is three words or more, because "trade mark" would match half the statute.
 
 The relevance guard has three levels, not two:
 

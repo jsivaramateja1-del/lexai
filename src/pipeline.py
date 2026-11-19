@@ -43,7 +43,9 @@ def answer_question(
 
     # 2. Relevance guard: refuse instead of guessing
     best_distance = hits[0]["distance"] if hits else 1.0
-    if not evidence["accepted"] or not hits or best_distance > config.MAX_DISTANCE:
+    # The agent already decided, using cosine distance AND lexical evidence.
+    # Re-testing distance here would silently undo the lexical rule.
+    if not evidence["accepted"] or not hits:
         result = _result(
             query_id, NO_ANSWER, hits, "no_answer", "",
             retrieval_ms=retrieval_ms, total_ms=_elapsed(total_started),

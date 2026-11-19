@@ -75,3 +75,34 @@ def test_guard_can_be_switched_off(monkeypatch):
 
 def test_guard_handles_no_hits():
     assert hybrid.should_accept(None, "anything", []) is False
+
+
+def test_a_two_word_phrase_is_not_decisive_evidence(monkeypatch):
+    """'trade mark' appears on half the pages, so it cannot certify a passage."""
+    monkeypatch.setattr(config, "MAX_DISTANCE", 0.35)
+    hit = _hit("a", 0.80, text="the trade mark shall be renewed on payment of fee")
+    assert hybrid.accept_level(hit, "trademark renewal", ["trade mark"]) == 0
+
+
+def test_a_three_word_phrase_is_decisive_evidence(monkeypatch):
+    monkeypatch.setattr(config, "MAX_DISTANCE", 0.35)
+    hit = _hit("a", 0.80, text="(k) a computer programme per se or algorithms")
+    assert hybrid.accept_level(hit, "can I patent software", ["computer programme per se"]) == 2
+
+
+def test_exact_phrase_hits_are_floated_to_the_top():
+    fused = [
+        {"chunk_id": "noise", "text": "patent application form", "rrf": 0.030, "matched_by": "vector"},
+        {"chunk_id": "phrase", "text": "a computer programme per se or algorithms", "rrf": 0.010,
+         "matched_by": "keyword"},
+    ]
+    out = hybrid.prefer_exact_phrase(fused, "computer programme per se")
+    assert out[0]["chunk_id"] == "phrase"
+    assert "phrase" in out[0]["matched_by"]
+
+
+def test_exact_phrase_tier_ignores_short_queries():
+    fused = [{"chunk_id": "a", "text": "trade mark rules", "rrf": 0.02, "matched_by": "vector"},
+             {"chunk_id": "b", "text": "patents", "rrf": 0.03, "matched_by": "vector"}]
+    out = hybrid.prefer_exact_phrase(fused, "trade mark")
+    assert [item["chunk_id"] for item in out] == ["a", "b"]   # order untouched

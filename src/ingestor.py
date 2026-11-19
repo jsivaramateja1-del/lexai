@@ -85,6 +85,20 @@ def clean_text(raw: str) -> str:
     return _MULTI_NEWLINE.sub("\n\n", "\n".join(kept)).strip()
 
 
+_JUNK_LINE = re.compile(r"^[\s*\u2014\u2013.,;:()\[\]-]{0,12}$")
+
+
+def _strip_leading_junk(chunk: str) -> str:
+    """Drop leading lines that carry no text: footnote stars, stray punctuation.
+
+    A chunk that begins with "* * *" embeds a little worse and cites badly.
+    """
+    lines = chunk.split("\n")
+    while lines and _JUNK_LINE.match(lines[0]):
+        lines.pop(0)
+    return "\n".join(lines).strip()
+
+
 # ---------------------------------------------------------------- chunking
 def _tail(text: str, overlap: int) -> str:
     """Last ~overlap characters of text, cut at a word boundary."""
@@ -129,13 +143,16 @@ def _hard_split(text: str, size: int, overlap: int) -> list[str]:
 
 
 def chunk_text(text: str, size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> list[str]:
-    """Split text into overlapping chunks, respecting paragraph boundaries.
+    """Split text into overlapping chunks, respecting paragraph and word boundaries.
 
-    Two rules matter for RAG quality:
-      1. Prefer ending a chunk where a paragraph ends, so a chunk is about
-         one idea instead of three half-ideas.
-      2. Repeat the tail of each chunk at the start of the next one, so a
-         sentence cut in half is still complete somewhere.
+    Three rules, all learned the hard way:
+      1. Prefer ending a chunk where a paragraph ends, so a chunk carries one idea.
+      2. Repeat the tail of each chunk at the start of the next, so a sentence cut
+         at a boundary is still complete somewhere.
+      3. NEVER slice at an arbitrary character. A cut inside a word destroys the
+         phrase that carries the legal meaning ("computer programme per se" once
+         became "computer programme pe" + "r se or algorithms", and the passage
+         became unfindable by both vector and keyword search).
     """
     if size <= 0:
         raise ValueError("size must be positive")
@@ -152,21 +169,27 @@ def chunk_text(text: str, size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) 
     chunks: list[str] = []
     buffer = ""
     for unit in units:
-        candidate = f"{buffer}\n\n{unit}" if buffer else unit
+        if not buffer:
+            buffer = unit
+            continue
+
+        candidate = f"{buffer}\n\n{unit}"
         if len(candidate) <= size:
             buffer = candidate
             continue
-        if buffer:
-            chunks.append(buffer.strip())
-        tail = _tail(buffer, overlap)
+
+        chunks.append(buffer.strip())
+
+        # Carry a word-aligned tail into the next chunk, but leave room for the
+        # incoming unit so the new buffer can never exceed `size`. This is what
+        # keeps the overlap from being bought with an arbitrary slice later.
+        room = max(0, size - len(unit) - 2)
+        tail = _tail(buffer, min(overlap, room))
         buffer = f"{tail}\n\n{unit}".strip() if tail else unit
-        while len(buffer) > size:
-            chunks.append(buffer[:size].strip())
-            buffer = buffer[size - overlap:].strip()
 
     if buffer.strip():
         chunks.append(buffer.strip())
-    return [c for c in chunks if c]
+    return [c for c in (_strip_leading_junk(chunk) for chunk in chunks) if c]
 
 
 # ------------------------------------------------------------------ ingest

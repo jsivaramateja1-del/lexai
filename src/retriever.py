@@ -89,7 +89,8 @@ def search(question: str, top_k: int = TOP_K, hybrid: bool | None = None) -> lis
     from src import hybrid as hybrid_mod
 
     keyword_hits = hybrid_mod.keyword_search(question, top_n=max(top_k * 3, 12))
-    fused = hybrid_mod.fuse(hits, keyword_hits)[:top_k]
+    fused = hybrid_mod.fuse(hits, keyword_hits)
+    fused = hybrid_mod.prefer_exact_phrase(fused, question)[:top_k]
 
     # Keyword-only hits have no cosine distance yet; compute it so the guard and
     # the UI keep one comparable number.
