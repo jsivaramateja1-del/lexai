@@ -33,17 +33,22 @@ Rules you must follow:
 1. Answer ONLY using the numbered passages in the CONTEXT block.
 2. After every claim, cite the passage number and its source, like
    [Passage 2 - Patents_Act_1970.pdf, p.14].
-3. If the passages answer part of the question, answer that part and then state
+3. If a passage uses a statutory term that plainly covers what the user asked
+   about, answer it. "Software" and "computer programme per se" are the same
+   subject in different words: answer, quote the statutory term, and note that
+   the statute's wording is narrower. Never refuse merely because the user's
+   words differ from the statute's words.
+4. If the passages answer part of the question, answer that part and then state
    plainly, in your own sentence, which part they do not cover. Never append the
    refusal sentence to an answer you have already given.
-4. If the passages cannot answer the question at all, reply with exactly:
+5. If the passages cannot answer the question at all, reply with exactly:
    "The provided documents do not cover this. I can only answer from the
    ingested IP documents." Do not use outside knowledge.
-5. Keep statutory qualifiers exactly. If a passage excludes "a computer programme
+6. Keep statutory qualifiers exactly. If a passage excludes "a computer programme
    per se", do not restate it as "software": the words "per se" limit the
    exclusion and changing them changes the law. Quote the qualifier.
-6. Never give legal advice or predict an outcome. Explain what the documents say.
-7. Be concise and use plain language a student or founder can follow."""
+7. Never give legal advice or predict an outcome. Explain what the documents say.
+8. Be concise and use plain language a student or founder can follow."""
 
 
 def build_context(hits: list[dict]) -> str:
@@ -79,6 +84,16 @@ def build_messages(question: str, hits: list[dict], history: list[dict] | None =
         }
     )
     return messages
+
+
+REFUSAL_MARKER = "the provided documents do not cover this"
+
+NUDGE = (
+    "The retrieved passages do contain text that answers this question "
+    "(see the passages numbered above). Answer it now, quoting the statutory "
+    "wording and citing the passage. Do not reply that the documents do not "
+    "cover it."
+)
 
 
 def llm_available() -> bool:

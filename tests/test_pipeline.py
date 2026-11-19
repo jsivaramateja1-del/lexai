@@ -21,8 +21,10 @@ def _stub_evidence(accepted: bool, score: float = 0.8):
         return {
             "hits": hits,
             "accepted": accepted,
+            "strong": accepted,          # a stub strong match, so the retry path is exercised
             "trace": [{"step": 1, "query": question, "source": "original",
-                       "top_score": score, "top_page": 10, "accepted": accepted}],
+                       "top_score": score, "top_page": 10, "level": 2 if accepted else 0,
+                       "accepted": accepted}],
         }
 
     return collect
@@ -121,6 +123,7 @@ def test_system_prompt_forbids_appending_the_refusal_to_an_answer():
     assert "answer that part" in flat
     assert "cannot answer the question at all" in flat
     assert "Keep statutory qualifiers exactly" in flat
+    assert "Never refuse merely because the user" in flat
 
 
 def test_context_numbers_every_passage_so_citations_are_checkable():
@@ -133,3 +136,40 @@ def test_context_numbers_every_passage_so_citations_are_checkable():
     context = build_context(hits)
     assert "[Passage 1] Source: a.pdf, page 1" in context
     assert "[Passage 2] Source: b.pdf, page 7" in context
+
+
+def test_a_refusal_is_retried_once_when_the_evidence_is_strong(monkeypatch):
+    """Observed: strong lexical evidence, model still said 'documents do not cover this'."""
+    _no_log(monkeypatch)
+    monkeypatch.setattr(pipeline.agent, "collect_evidence", _stub_evidence(True))
+    monkeypatch.setattr(pipeline.generator, "llm_available", lambda: True)
+
+    calls = {"n": 0}
+
+    def call_llm(messages, retries=2):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return {"text": "The provided documents do not cover this.", "latency_s": 0.2, "error": ""}
+        return {"text": "Computer programmes per se are excluded [p.10].", "latency_s": 0.2, "error": ""}
+
+    monkeypatch.setattr(pipeline.generator, "call_llm", call_llm)
+    result = pipeline.answer_question("can I patent software")
+    assert calls["n"] == 2
+    assert result["mode"] == "llm"
+    assert "excluded" in result["answer"]
+
+
+def test_the_retry_is_not_repeated_forever(monkeypatch):
+    _no_log(monkeypatch)
+    monkeypatch.setattr(pipeline.agent, "collect_evidence", _stub_evidence(True))
+    monkeypatch.setattr(pipeline.generator, "llm_available", lambda: True)
+    calls = {"n": 0}
+
+    def call_llm(messages, retries=2):
+        calls["n"] += 1
+        return {"text": "The provided documents do not cover this.", "latency_s": 0.1, "error": ""}
+
+    monkeypatch.setattr(pipeline.generator, "call_llm", call_llm)
+    result = pipeline.answer_question("can I patent software")
+    assert calls["n"] == 2                       # one corrective attempt, no loop
+    assert result["mode"] == "llm"               # an honest refusal is still returned

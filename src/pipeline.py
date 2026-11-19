@@ -60,6 +60,21 @@ def answer_question(
         messages = generator.build_messages(question, hits, history)
         reply = generator.call_llm(messages)
         llm_ms = int(reply["latency_s"] * 1000)
+        text = (reply["text"] or "").strip()
+        refused = generator.REFUSAL_MARKER in text.lower()[:120]
+        if not reply["error"] and refused and evidence.get("strong"):
+            # Strong evidence but a refusal: the model under-read the context.
+            # One corrective attempt, because a strong lexical match means the
+            # answer is present. Bounded, so this cannot loop.
+            nudge_messages = messages + [
+                {"role": "user", "content": generator.NUDGE}
+            ]
+            second = generator.call_llm(nudge_messages)
+            llm_ms += int(second["latency_s"] * 1000)
+            if not second["error"] and second["text"] and \
+                    generator.REFUSAL_MARKER not in second["text"].lower()[:120]:
+                reply = second
+
         if reply["error"]:
             # Distinct mode, so the UI and the log can tell "the model was never
             # called" apart from "the model was called and failed".
