@@ -20,6 +20,7 @@ FIELDS = [
     "num_sources",
     "sources",           # "Patents_Act_1970.pdf p.14 | ..."
     "top_distance",
+    "agent_trace",       # which search phrasings the agent tried, and the score each returned
     "retrieval_ms",
     "llm_ms",
     "total_ms",

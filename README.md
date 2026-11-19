@@ -46,6 +46,7 @@ data/documents/*.pdf
 | `src/config.py` | Every tunable value, read from `.env` |
 | `src/ingestor.py` | PDF extraction, cleaning, overlapping chunking |
 | `src/embedder.py` | One local embedding model for both documents and queries |
+| `src/agent.py` | Agentic retrieval: propose phrasings, retry while the best match is weak |
 | `src/retriever.py` | ChromaDB storage and top-k semantic search |
 | `src/generator.py` | Prompt construction and the single LLM call |
 | `src/pipeline.py` | retrieve → guard → generate → log |
@@ -81,6 +82,7 @@ Run the tests:
 
 ```bash
 pytest -q
+python tests/smoke_check.py
 ```
 
 ## Configuration
@@ -109,7 +111,43 @@ Only public documents, each recorded with its source URL and the date it was dow
 Amendments matter: an answer grounded in a superseded text is still wrong. Each document's
 version and download date will be recorded in `data/documents/SOURCES.md`.
 
+## Measured results
+
+Real numbers from the current build, one statute (Patents Act, 1970, as amended to 01-08-2024):
+
+| Measure | Value |
+| --- | --- |
+| Pages extracted | 69 |
+| Chunks indexed | 482 (900 characters, 150 overlap, page-scoped) |
+| Embedding model | paraphrase-multilingual-MiniLM-L12-v2, local, 384 dimensions |
+| Rebuild time | ~22 s |
+| Refusal threshold | cosine distance 0.35 (similarity 0.65), calibrated from test questions |
+| Unit tests | 16 passing, plus one end-to-end smoke check |
+| Cost per answered question | roughly 2 paise at introductory Sarvam pricing |
+
+A chunk-size experiment (450/80, 900/150, 1400/200 against four fixed questions) chose the
+900/150 setting: it was the only configuration that returned the correct page for both
+answerable questions. The highest similarity score in that experiment belonged to a wrong
+answer, which is why scores are used to rank candidates, never to certify them.
+
+## Agentic retrieval
+
+`src/agent.py` runs a bounded decision loop instead of a single lookup:
+
+1. **Plan** — the question, a key-term variant, and (when a key is configured) up to two
+   model-written rewrites.
+2. **Act** — retrieve with the first phrasing.
+3. **Observe** — is the best passage within the refusal threshold?
+4. **Re-act** — if not, try the next phrasing; stop at the first accepted result.
+
+The loop is capped at `MAX_ATTEMPTS`, and every attempt is recorded in a trace that the UI
+shows and the query log stores, so the behaviour is auditable rather than opaque. It runs
+without an API key, because the key-term variant needs no model.
+
 ## Status
 
-Week 1 skeleton: pipeline, UI, landing page and logging in place, knowledge base empty.
-Built as the CDS208 final project at Sai University.
+Working end to end on one statute: ingestion, retrieval, agentic retry, grounded answers with
+page-level citations, refusal, Streamlit UI, landing page and query logging. Remaining: a 20-30
+question evaluation set, two more statutes, and the Power BI dashboard.
+
+Built for CDS208 problem statement #4 at Sai University.

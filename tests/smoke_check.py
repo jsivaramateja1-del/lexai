@@ -1,4 +1,7 @@
-"""End-to-end smoke test with a fake embedder (no model download, no API key).
+"""End-to-end smoke check with a fake embedder (no model download, no API key).
+
+Named smoke_check (not test_*) on purpose: pytest would import this file and its
+module-level setup would leak into other tests.
 
 Proves the wiring works: PDF -> chunks -> vector store -> search -> pipeline.
 Run:  python tests/smoke_test.py
@@ -45,7 +48,7 @@ import src.pipeline as pipeline  # noqa: E402
 
 # A test must control its own environment: never inherit thresholds from .env,
 # and never call a paid API. Otherwise the test result depends on your settings.
-pipeline.MAX_DISTANCE = 0.9
+config.MAX_DISTANCE = 0.9
 pipeline.generator.llm_available = lambda: False
 
 # --- 2. build a two-page PDF that looks like a statute ---
@@ -92,7 +95,7 @@ assert result["mode"] == "extractive"
 assert result["sources"] and result["sources"][0]["page"] == 2
 
 # --- 5. refusal path: a question with no match in the corpus ---
-pipeline.MAX_DISTANCE = -1.0     # force every distance to look too far
+config.MAX_DISTANCE = -1.0     # force every distance to look too far
 refused = pipeline.answer_question("what is the capital of France")
 print("refusal mode:", refused["mode"])
 assert refused["mode"] == "no_answer"

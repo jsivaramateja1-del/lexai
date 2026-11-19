@@ -103,6 +103,17 @@ def main() -> None:
             f"llm {result['llm_ms']} ms · total {result['total_ms']} ms"
         )
 
+        trace = result.get("trace") or []
+        if trace:
+            with st.expander(f"How the agent searched ({len(trace)} attempt(s))"):
+                for step in trace:
+                    score = f"{step['top_score']:.3f}" if step["top_score"] is not None else "n/a"
+                    verdict = "accepted" if step["accepted"] else "rejected"
+                    st.markdown(
+                        f"**{step['step']}. {step['source']}** — \"{step['query']}\" · "
+                        f"best {score} · page {step['top_page']} · {verdict}"
+                    )
+
         col_up, col_down, _ = st.columns([1, 1, 8])
         if col_up.button("Helpful", key=f"up-{result['query_id']}"):
             set_feedback(result["query_id"], "up")

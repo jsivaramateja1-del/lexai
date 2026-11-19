@@ -1,15 +1,18 @@
 """The pipeline: question in, grounded answer + citations out.
 
 Read this file top to bottom and you have the whole RAG idea:
-    retrieve -> check relevance -> build prompt -> generate -> log
+    plan queries -> retrieve -> check relevance -> generate -> log
+
+The retrieval step is delegated to src/agent.py, which may try more than one
+search phrasing before giving up. Everything else is unchanged.
 """
 
 from __future__ import annotations
 
 import time
 
-from src import generator, retriever
-from src.config import DISCLAIMER, MAX_DISTANCE, TOP_K
+from src import agent, config, generator
+from src.config import DISCLAIMER, TOP_K
 from src.logger import log_query, new_query_id
 
 NO_ANSWER = (
@@ -31,18 +34,21 @@ def answer_question(
 
     total_started = time.perf_counter()
 
-    # 1. Retrieve
+    # 1. Retrieve - the agent may try several phrasings and records each attempt
     retrieve_started = time.perf_counter()
-    hits = retriever.search(question, top_k=top_k)
+    evidence = agent.collect_evidence(question, top_k=top_k)
+    hits = evidence["hits"]
+    trace = evidence["trace"]
     retrieval_ms = int((time.perf_counter() - retrieve_started) * 1000)
 
     # 2. Relevance guard: refuse instead of guessing
     best_distance = hits[0]["distance"] if hits else 1.0
-    if not hits or best_distance > MAX_DISTANCE:
+    if not evidence["accepted"] or not hits or best_distance > config.MAX_DISTANCE:
         result = _result(
             query_id, NO_ANSWER, hits, "no_answer", "",
             retrieval_ms=retrieval_ms, total_ms=_elapsed(total_started),
         )
+        result["trace"] = trace
         log_query(_log_row(query_id, question, result, best_distance))
         return result
 
@@ -65,6 +71,8 @@ def answer_question(
         query_id, answer, hits, mode, error,
         retrieval_ms=retrieval_ms, llm_ms=llm_ms, total_ms=_elapsed(total_started),
     )
+    result["trace"] = trace
+    result["trace_text"] = agent.describe_trace(trace)
     log_query(_log_row(query_id, question, result, best_distance))
     return result
 
@@ -108,6 +116,7 @@ def _log_row(query_id: str, question: str, result: dict, best_distance: float) -
         "num_sources": len(result["sources"]),
         "sources": " | ".join(f"{s['source']} p.{s['page']}" for s in result["sources"]),
         "top_distance": round(best_distance, 4),
+        "agent_trace": agent.describe_trace(result.get("trace", []))[:400],
         "retrieval_ms": result["retrieval_ms"],
         "llm_ms": result["llm_ms"],
         "total_ms": result["total_ms"],
