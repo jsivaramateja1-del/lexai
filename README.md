@@ -1,4 +1,5 @@
-# IP-SAKTI Sahayak
+# LexAI
+> Developed for CDS208 problem statement #4 — IP-SAKTI Sahayak.
 
 A source-cited AI assistant for Indian intellectual property information. Ask a question in
 plain language; the assistant retrieves the relevant passages from official IP documents and

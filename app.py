@@ -9,7 +9,7 @@ from src.config import DISCLAIMER, LLM_ENABLED, MAX_DISTANCE, TOP_K
 from src.logger import set_feedback
 from src.pipeline import answer_question
 
-st.set_page_config(page_title="IP-SAKTI Sahayak", page_icon="§", layout="wide")
+st.set_page_config(page_title="LexAI", page_icon="§", layout="wide")
 
 
 @st.cache_resource
@@ -57,7 +57,7 @@ def render_sources(result: dict) -> None:
 
 
 def main() -> None:
-    st.title("IP-SAKTI Sahayak")
+    st.title("LexAI")
     st.caption("Source-cited answers from Indian intellectual property documents.")
 
     warm_embeddings()

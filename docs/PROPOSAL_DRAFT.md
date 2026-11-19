@@ -5,7 +5,7 @@
 **Course:** CDS208 Emerging Tools and Applications (Lab: CDS228)
 **Selected problem statement:** #4 — IP-SAKTI Sahayak: AI Regulatory & Knowledge Assistant
 **Technology focus:** RAG, Agentic AI, Prompt Engineering, Streamlit, Web
-**Working title:** IP-SAKTI Sahayak
+**Working title:** LexAI
 
 > Edit the bracketed placeholders (student ID, dates) before submitting. Faculty approval for
 > solo work is confirmed verbally — attach or mention it if asked.
@@ -21,7 +21,7 @@ numbers and case law, which in a legal context is worse than no answer.
 
 ## 2. Proposed solution
 
-IP-SAKTI Sahayak is a retrieval-augmented assistant. A user asks a question in plain
+LexAI is a retrieval-augmented assistant. A user asks a question in plain
 language (English or an Indian language). The system retrieves the most relevant passages
 from an indexed knowledge base of official Indian IP documents, passes only those passages to
 a language model, and returns an answer in which every claim is cited by document name and
