@@ -69,9 +69,11 @@ def _build_index(signature: tuple[int, str]):
 
     vectorizer = TfidfVectorizer(
         lowercase=True,
-        stop_words="english",
+        stop_words=None,         # "per" is a term of art here: "computer programme per se"
         ngram_range=(1, 3),      # trigrams matter: "computer programme per se"
         sublinear_tf=True,
+        min_df=1,
+        token_pattern=r"[a-z][a-z-]+",
     )
     matrix = vectorizer.fit_transform(texts)
     return vectorizer, matrix, ids, texts, metas

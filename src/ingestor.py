@@ -96,9 +96,36 @@ def _tail(text: str, overlap: int) -> str:
 
 
 def _hard_split(text: str, size: int, overlap: int) -> list[str]:
-    """Cut a single paragraph that is longer than one chunk."""
-    step = max(1, size - overlap)
-    return [text[i:i + size] for i in range(0, len(text), step)]
+    """Cut a paragraph longer than one chunk, at a boundary a human would choose.
+
+    Cutting at an arbitrary character splits words ("programme pe" / "r se") and
+    destroys exact phrases, which is fatal for legal text where the phrase is the
+    meaning. So: prefer a clause break, then a sentence break, then a space.
+    """
+    pieces: list[str] = []
+    start = 0
+    length = len(text)
+    while start < length:
+        end = min(start + size, length)
+        if end < length:
+            window = text[start:end]
+            cut = max(window.rfind("; "), window.rfind(". "), window.rfind(" "))
+            if cut > size * 0.7:            # only accept a boundary near the end
+                end = start + cut + 1
+            else:
+                # otherwise extend to the next space, so no word is ever cut in two
+                following = text.find(" ", end)
+                if following != -1 and following - end <= 40:
+                    end = following
+        piece = text[start:end].strip()
+        if piece:
+            pieces.append(piece)
+        # Always move forward. If the remaining text is shorter than the overlap,
+        # stepping back by `overlap` would not advance, and the loop would emit a
+        # staircase of ever-shorter pieces (150, 149, 148 ... 1). Step to the end.
+        next_start = end - overlap
+        start = next_start if next_start > start else end
+    return pieces
 
 
 def chunk_text(text: str, size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> list[str]:

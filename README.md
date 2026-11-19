@@ -119,12 +119,16 @@ Real numbers from the current build, one statute (Patents Act, 1970, as amended 
 | Measure | Value |
 | --- | --- |
 | Pages extracted | 69 |
-| Chunks indexed | 482 (900 characters, 150 overlap, page-scoped) |
+| Chunks indexed | 507 (900 characters, 150 overlap, page-scoped, boundary-aware) |
 | Embedding model | paraphrase-multilingual-MiniLM-L12-v2, local, 384 dimensions |
 | Rebuild time | ~22 s |
 | Refusal threshold | cosine distance 0.35 (similarity 0.65), calibrated from test questions |
-| Unit tests | 37 passing, plus one end-to-end smoke check |
+| Unit tests | 39 passing, plus one end-to-end smoke check |
 | Cost per answered question | roughly 2 paise at introductory Sarvam pricing |
+
+Chunks are cut at clause, sentence or word boundaries, never mid-word: an exact phrase like
+"computer programme per se" is the legal meaning, so a split inside it destroys the evidence.
+A forward-progress guard keeps overlapping splits from emitting ever-shorter fragments.
 
 A chunk-size experiment (450/80, 900/150, 1400/200 against four fixed questions) chose the
 900/150 setting: it was the only configuration that returned the correct page for both

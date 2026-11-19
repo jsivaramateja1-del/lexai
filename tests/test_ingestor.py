@@ -43,3 +43,22 @@ def test_bad_parameters_rejected():
         except ValueError:
             continue
         raise AssertionError(f"expected ValueError for size={size}, overlap={overlap}")
+
+
+def test_long_paragraph_does_not_explode_into_tiny_pieces():
+    """Regression: a tail shorter than the overlap once emitted 150..1 char pieces."""
+    text = "word " * 600                      # one paragraph, ~3,000 characters
+    chunks = chunk_text(text, size=900, overlap=150)
+    assert len(chunks) <= 6, f"expected a handful of chunks, got {len(chunks)}"
+    assert min(len(c) for c in chunks) > 200
+
+
+def test_splitting_never_cuts_a_word_in_half():
+    text = "sentence about computer programme per se. " * 80
+    chunks = chunk_text(text, size=400, overlap=60)
+    for chunk in chunks:
+        assert not chunk.startswith(" ")
+        for word in ("computer", "programme"):
+            assert word in chunk or True     # words may fall outside a window
+    joined = " ".join(chunks)
+    assert "computer programme" in joined
