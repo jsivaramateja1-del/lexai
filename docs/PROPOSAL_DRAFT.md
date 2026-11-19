@@ -95,7 +95,17 @@ information, not legal advice.
 | Hallucinated answers despite grounding | Strict citation-only prompt, low temperature, refusal threshold, faithfulness check on the evaluation set |
 | Scope creep as a solo developer | MVP frozen at end of Week 5; advanced features only after MVP demo works |
 
-## 8. Deliverables
+## 8. Status at the progress review (20 November 2026)
+
+Working end to end on one statute. Measured: 69 pages of the Patents Act, 1970 extracted,
+482 chunks indexed at 900 characters with 150 overlap, page-level citations on every answer,
+a refusal threshold of 0.35 cosine distance calibrated from four fixed test questions, and a
+bounded agentic retrieval loop (plan, retrieve, check, retry) with an auditable trace.
+16 unit tests and one end-to-end smoke check pass; the repository is public with typed commit
+messages. Remaining: a 20-30 question evaluation set, two further statutes, and the Power BI
+dashboard on the query log.
+
+## 9. Deliverables
 
 Public GitHub repository with meaningful commit history, working prototype, README with
 architecture diagram, evaluation results, Power BI dashboard, demo video and presentation.

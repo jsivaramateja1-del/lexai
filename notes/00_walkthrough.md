@@ -42,6 +42,12 @@ assembles system prompt + last few turns + the grounded user turn, `call_llm` po
 request with timeout and exponential backoff on 429/5xx. `extractive_answer` is the no-API
 fallback: it quotes passages verbatim, which cannot hallucinate.
 
+**`src/agent.py`** — the decision loop. It proposes search phrasings (the question, a
+key-term version with stopwords removed, and model rewrites when a key exists), retrieves
+with the first, and only retries when the best passage is further than the threshold. The
+attempt budget is capped and every attempt is recorded, so the behaviour can be explained
+and logged rather than guessed at.
+
 **`src/pipeline.py`** — the five steps, readable top to bottom. The important line is the
 relevance guard: if the best distance exceeds `MAX_DISTANCE`, return a refusal and stop.
 That single check is what separates this from a chatbot that guesses.
@@ -67,3 +73,5 @@ link previews, a mobile nav toggle, `aria-expanded` for screen readers.
 5. Where a hallucination could still slip through even with RAG, and what to do about it
    (stricter prompt, lower temperature, faithfulness evaluation).
 6. Why `.env` is git-ignored and what happens if a key is committed.
+7. What makes the retrieval loop "agentic" rather than a single search, and why the loop
+   is capped at a fixed number of attempts.
