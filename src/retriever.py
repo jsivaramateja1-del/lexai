@@ -109,6 +109,15 @@ def stats() -> dict:
 
 
 def reset() -> None:
-    """Delete every stored chunk. Used when you rebuild the knowledge base."""
-    get_client().delete_collection(COLLECTION_NAME)
-    get_collection.cache_clear() if hasattr(get_collection, "cache_clear") else None
+    """Delete every stored chunk. Safe to call when nothing exists yet.
+
+    The first command a new user runs is `python -m scripts.ingest --reset`, often
+    before any collection exists. ChromaDB raises NotFoundError in that case, which
+    used to abort the ingest instead of simply starting clean.
+    """
+    try:
+        get_client().delete_collection(COLLECTION_NAME)
+    except Exception as exc:                                     # noqa: BLE001
+        message = str(exc).lower()
+        if "does not exist" not in message and "not found" not in message:
+            raise

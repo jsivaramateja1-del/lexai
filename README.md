@@ -53,6 +53,8 @@ data/documents/*.pdf
 | `src/pipeline.py` | retrieve → guard → generate → log |
 | `src/logger.py` | Query logging to `analytics/queries.csv` |
 | `scripts/ingest.py` | Build/refresh the knowledge base |
+| `scripts/run_eval.py` | Run the evaluation set and report retrieval, refusal and citation rates |
+| `eval/questions.json` | Ground truth: questions with expected pages |
 | `tests/` | Unit tests for the AI-free parts (cleaning, chunking) |
 | `landing/` | Responsive landing page with basic SEO |
 | `notes/` | Learning notes and code walkthrough |
@@ -85,6 +87,7 @@ Run the tests:
 pytest -q
 python tests/smoke_check.py
 python tests/selfdrive.py        # whole system, real PDF, 41 checks
+python -m scripts.run_eval       # 29-question evaluation, free in quote mode
 ```
 
 ## Configuration
@@ -124,7 +127,7 @@ Real numbers from the current build, one statute (Patents Act, 1970, as amended 
 | Embedding model | paraphrase-multilingual-MiniLM-L12-v2, local, 384 dimensions |
 | Rebuild time | ~22 s |
 | Refusal threshold | cosine distance 0.35 (similarity 0.65), calibrated from test questions |
-| Unit tests | 47 passing, plus a smoke check and a 41-check system test drive |
+| Unit tests | 59 passing, plus a smoke check and a 41-check system test drive |
 | Cost per answered question | roughly 2 paise at introductory Sarvam pricing |
 
 Chunks are cut at clause, sentence or word boundaries, never mid-word: an exact phrase like
@@ -135,6 +138,31 @@ A chunk-size experiment (450/80, 900/150, 1400/200 against four fixed questions)
 900/150 setting: it was the only configuration that returned the correct page for both
 answerable questions. The highest similarity score in that experiment belonged to a wrong
 answer, which is why scores are used to rank candidates, never to certify them.
+
+## Evaluation
+
+`eval/questions.json` holds 29 questions: 24 answerable from the Patents Act and 5 that are not
+(trademark fees, copyright term, designs, trade secrets, US filing fees). Expected pages were
+derived by searching the PDF for each section's wording, not chosen from what the system
+returned — otherwise the set would only measure agreement with itself.
+
+```bash
+python -m scripts.run_eval          # quote mode: free, no API calls
+python -m scripts.run_eval --llm    # real answers, roughly 2 paise per question
+```
+
+It reports four separate numbers, because they fail for different reasons:
+
+| Metric | Question it answers |
+| --- | --- |
+| retrieval hit@5 | was an expected page among the retrieved passages? |
+| top-1 correct | was it the first passage returned? |
+| refusal accuracy | were unanswerable questions refused, and answerable ones answered? |
+| citations present | did an answer carry a page reference? |
+
+A single "accuracy" figure would hide the interesting case: retrieving the right page and still
+answering badly, or answering fluently from the wrong page. Per-question detail is written to
+`eval/results.csv` for the report and the dashboard.
 
 ## Agentic retrieval
 

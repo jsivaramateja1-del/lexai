@@ -1,0 +1,288 @@
+{
+  "document": "Patents_Act_1970.pdf",
+  "questions": [
+    {
+      "id": "Q01",
+      "question": "What is not patentable?",
+      "answerable": true,
+      "expected_pages": [
+        9
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q02",
+      "question": "What counts as an invention?",
+      "answerable": true,
+      "expected_pages": [
+        8
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q03",
+      "question": "How long does a patent last?",
+      "answerable": true,
+      "expected_pages": [
+        30,
+        31
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q04",
+      "question": "What is a provisional specification?",
+      "answerable": true,
+      "expected_pages": [
+        11,
+        12,
+        13
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q05",
+      "question": "When must I request examination?",
+      "answerable": true,
+      "expected_pages": [
+        15,
+        16,
+        17
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q06",
+      "question": "Can I oppose the grant of a patent?",
+      "answerable": true,
+      "expected_pages": [
+        8,
+        20,
+        21
+      ],
+      "note": "chapter V, opposition proceedings"
+    },
+    {
+      "id": "Q07",
+      "question": "What is a compulsory licence?",
+      "answerable": true,
+      "expected_pages": [
+        40,
+        41,
+        43
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q08",
+      "question": "What is the fee for renewing a patent?",
+      "answerable": true,
+      "expected_pages": [
+        26,
+        30,
+        31
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q09",
+      "question": "Who can apply for a patent?",
+      "answerable": true,
+      "expected_pages": [
+        10
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q10",
+      "question": "What is an inventive step?",
+      "answerable": true,
+      "expected_pages": [
+        8,
+        9,
+        20
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q11",
+      "question": "What is anticipation of an invention?",
+      "answerable": true,
+      "expected_pages": [
+        16,
+        23,
+        24
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q12",
+      "question": "Can a lapsed patent be restored?",
+      "answerable": true,
+      "expected_pages": [
+        33
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q13",
+      "question": "What is a patent of addition?",
+      "answerable": true,
+      "expected_pages": [
+        8,
+        19,
+        30
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q14",
+      "question": "What rights does a patent give me?",
+      "answerable": true,
+      "expected_pages": [
+        28
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q15",
+      "question": "What is infringement of a patent?",
+      "answerable": true,
+      "expected_pages": [
+        50,
+        51
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q16",
+      "question": "Can I assign or license my patent?",
+      "answerable": true,
+      "expected_pages": [
+        11,
+        18,
+        19
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q17",
+      "question": "Who can act as a patent agent?",
+      "answerable": true,
+      "expected_pages": [
+        55,
+        56,
+        57
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q18",
+      "question": "Are atomic energy inventions patentable?",
+      "answerable": true,
+      "expected_pages": [
+        10,
+        26,
+        36
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q19",
+      "question": "What is an international application?",
+      "answerable": true,
+      "expected_pages": [
+        8,
+        11,
+        12
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q20",
+      "question": "What is the register of patents?",
+      "answerable": true,
+      "expected_pages": [
+        9,
+        23,
+        36
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q21",
+      "question": "Can the government use my patented invention?",
+      "answerable": true,
+      "expected_pages": [
+        36,
+        47,
+        48
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q22",
+      "question": "What happens if I do not pay the renewal fee?",
+      "answerable": true,
+      "expected_pages": [
+        30
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q23",
+      "question": "What must a complete specification contain?",
+      "answerable": true,
+      "expected_pages": [
+        11,
+        12,
+        13
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q24",
+      "question": "How is a patent application published?",
+      "answerable": true,
+      "expected_pages": [
+        14
+      ],
+      "note": ""
+    },
+    {
+      "id": "Q25",
+      "question": "What is the trademark fee for a small enterprise?",
+      "answerable": false,
+      "expected_pages": [],
+      "note": ""
+    },
+    {
+      "id": "Q26",
+      "question": "How long does copyright last in India?",
+      "answerable": false,
+      "expected_pages": [],
+      "note": ""
+    },
+    {
+      "id": "Q27",
+      "question": "Can I register an industrial design?",
+      "answerable": false,
+      "expected_pages": [],
+      "note": ""
+    },
+    {
+      "id": "Q28",
+      "question": "What is the penalty for stealing a trade secret?",
+      "answerable": false,
+      "expected_pages": [],
+      "note": ""
+    },
+    {
+      "id": "Q29",
+      "question": "What is the filing fee at the United States patent office?",
+      "answerable": false,
+      "expected_pages": [],
+      "note": ""
+    }
+  ]
+}
