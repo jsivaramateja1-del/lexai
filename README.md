@@ -122,7 +122,7 @@ Real numbers from the current build, one statute (Patents Act, 1970, as amended 
 | Embedding model | paraphrase-multilingual-MiniLM-L12-v2, local, 384 dimensions |
 | Rebuild time | ~22 s |
 | Refusal threshold | cosine distance 0.35 (similarity 0.65), calibrated from test questions |
-| Unit tests | 16 passing, plus one end-to-end smoke check |
+| Unit tests | 26 passing, plus one end-to-end smoke check |
 | Cost per answered question | roughly 2 paise at introductory Sarvam pricing |
 
 A chunk-size experiment (450/80, 900/150, 1400/200 against four fixed questions) chose the
@@ -134,15 +134,41 @@ answer, which is why scores are used to rank candidates, never to certify them.
 
 `src/agent.py` runs a bounded decision loop instead of a single lookup:
 
-1. **Plan** — the question, a key-term variant, and (when a key is configured) up to two
-   model-written rewrites.
+1. **Plan** — the question itself, then a statutory-phrasing variant from a small glossary
+   (`software` → `computer programme per se`, `brand` → `trade mark`), then a key-term
+   variant, then model-written rewrites when a key is configured.
 2. **Act** — retrieve with the first phrasing.
 3. **Observe** — is the best passage within the refusal threshold?
 4. **Re-act** — if not, try the next phrasing; stop at the first accepted result.
 
-The loop is capped at `MAX_ATTEMPTS`, and every attempt is recorded in a trace that the UI
-shows and the query log stores, so the behaviour is auditable rather than opaque. It runs
-without an API key, because the key-term variant needs no model.
+The loop is capped at `MAX_ATTEMPTS` (default 4), and every attempt is recorded in a trace
+that the UI shows and the query log stores, so the behaviour is auditable rather than opaque.
+It runs without an API key, because the statutory and key-term variants need no model.
+
+The glossary exists because a statute says "computer programme per se" where a user says
+"software". Dense retrieval often bridges that gap and often does not; one extra local search
+closes the whole class of misses, and a test asserts that "can I patent software" is planned
+with the statutory wording.
+
+## Answer modes
+
+Every response reports which path produced it, so a failure is never ambiguous:
+
+| Mode | Meaning |
+| --- | --- |
+| `llm` | The model answered from the retrieved passages, with citations |
+| `extractive` | Quote mode: no key configured or `LLM_ENABLED=false`. Passages are quoted verbatim |
+| `llm_error` | The model was called and failed. The passages are quoted instead, with the error shown |
+| `no_answer` | Nothing passed the relevance threshold. Refused before any model call |
+| `error` | The question was empty or malformed |
+
+## Interface
+
+`app.py` is a designed Streamlit interface rather than default chrome: a branded header with
+live status chips, source cards showing page, similarity and distance, a panel showing each
+retrieval attempt the agent made, feedback buttons wired to the query log, and example
+questions on an empty screen. All styling is CSS injected at runtime — no build step, nothing
+to install.
 
 ## Status
 

@@ -89,3 +89,27 @@ def test_trace_is_human_readable():
               "top_score": 0.672, "top_page": 9, "accepted": True}]
     text = agent.describe_trace(trace)
     assert "original" in text and "0.672" in text and "accepted" in text
+
+
+def test_glossary_maps_software_to_statutory_language():
+    terms = agent.statutory_terms("can I patent software")
+    assert any("computer programme" in term for term in terms)
+
+
+def test_glossary_maps_brand_to_trade_mark():
+    terms = agent.statutory_terms("can I register my brand name")
+    assert "trade mark" in terms
+
+
+def test_plan_tries_statutory_wording_before_key_terms():
+    plan = agent.plan_queries("can I patent software", use_llm=False)
+    sources = [item["source"] for item in plan]
+    assert sources[0] == "original"
+    assert "statutory terms" in sources
+    assert sources.index("statutory terms") < sources.index("key terms")
+
+
+def test_plan_without_glossary_terms_still_works():
+    plan = agent.plan_queries("zzzz qqqq", use_llm=False)
+    assert plan[0]["source"] == "original"
+    assert all(item["query"] for item in plan)

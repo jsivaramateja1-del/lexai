@@ -34,7 +34,7 @@ TOP_K = int(os.getenv("TOP_K", "5"))
 # Agentic retrieval: propose alternative search phrasings and retry while
 # the best passage is too far away. Bounded, so it cannot loop forever.
 AGENT_ENABLED = os.getenv("AGENT_ENABLED", "true").lower() == "true"
-MAX_ATTEMPTS = int(os.getenv("MAX_ATTEMPTS", "3"))
+MAX_ATTEMPTS = int(os.getenv("MAX_ATTEMPTS", "4"))
 
 # Cosine distance above which we refuse to answer ("not in the knowledge base").
 MAX_DISTANCE = float(os.getenv("MAX_DISTANCE", "0.75"))

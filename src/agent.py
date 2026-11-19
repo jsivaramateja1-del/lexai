@@ -13,8 +13,10 @@ in a trace, so the UI and the query log can show what the system did rather than
 hiding it. Bounded and auditable is the difference between an agent and a retry
 storm that burns API credits.
 
-Nothing here calls the LLM unless a rewrite is genuinely needed and a key exists,
-so the loop runs free during development.
+Why the glossary matters: a statute says "computer programme per se" where a
+user says "software". Dense retrieval often bridges that gap and often does not.
+Adding the statutory phrasing as one extra search costs nothing and closes a
+whole class of misses.
 """
 
 from __future__ import annotations
@@ -33,6 +35,66 @@ _STOPWORDS = {
     "i", "we", "you", "he", "she", "it", "they", "me", "us", "my", "our", "your",
     "there", "here", "any", "some", "all", "not", "no", "yes", "please", "tell",
     "explain", "mean", "means", "meaning", "say", "says", "according", "act",
+    "india", "indian", "legal", "law",
+}
+
+# User vocabulary -> the words an Indian IP statute actually uses.
+# Keys are matched as whole words, case-insensitively.
+GLOSSARY: dict[str, tuple[str, ...]] = {
+    "software": ("computer programme per se",),
+    "app": ("computer programme per se",),
+    "apps": ("computer programme per se",),
+    "code": ("computer programme per se",),
+    "coding": ("computer programme per se",),
+    "algorithm": ("computer programme per se algorithms",),
+    "algorithms": ("computer programme per se algorithms",),
+    "ai": ("computer programme per se",),
+    "ml": ("computer programme per se",),
+    "business": ("business method",),
+    "formula": ("mathematical method",),
+    "maths": ("mathematical method",),
+    "medicine": ("pharmaceutical substance",),
+    "drug": ("pharmaceutical substance",),
+    "drugs": ("pharmaceutical substance",),
+    "plant": ("plants and animals essentially biological processes",),
+    "plants": ("plants and animals essentially biological processes",),
+    "seed": ("plants and animals seeds varieties species",),
+    "seeds": ("plants and animals seeds varieties species",),
+    "brand": ("trade mark",),
+    "brandname": ("trade mark",),
+    "logo": ("trade mark",),
+    "trademark": ("trade mark",),
+    "trademarks": ("trade mark",),
+    "copying": ("infringement",),
+    "piracy": ("infringement",),
+    "book": ("literary work",),
+    "song": ("musical work",),
+    "songs": ("musical work",),
+    "movie": ("cinematograph film",),
+    "film": ("cinematograph film",),
+    "photo": ("artistic work",),
+    "duration": ("term of copyright",),
+    "expire": ("term of copyright",),
+    "expiry": ("term of copyright",),
+    "cost": ("fee payable",),
+    "costs": ("fee payable",),
+    "price": ("fee payable",),
+    "renew": ("renewal fee",),
+    "renewal": ("renewal fee",),
+    "draft": ("provisional specification complete specification",),
+    "filing": ("application for patent",),
+    "file": ("application for patent",),
+    "examination": ("examination of application",),
+    "examiner": ("examination of application",),
+    "challenge": ("opposition",),
+    "dispute": ("opposition revocation",),
+    "licence": ("compulsory licence",),
+    "license": ("compulsory licence",),
+    "generic": ("compulsory licence",),
+    "novel": ("novelty inventive step",),
+    "new": ("novelty inventive step",),
+    "obvious": ("inventive step",),
+    "unique": ("novelty",),
 }
 
 REWRITE_PROMPT = """You rewrite search queries for a legal document search engine.
@@ -47,17 +109,26 @@ QUESTION: {question}"""
 def key_terms(question: str, limit: int = 6) -> list[str]:
     """Rule-based fallback: the content words of the question, longest first.
 
-    Works with no API key, no network, and no cost. This is what runs in
-    development and in tests.
+    Works with no API key, no network, and no cost.
     """
     words = re.findall(r"[a-zA-Z][a-zA-Z-]+", question.lower())
     content = [w for w in words if w not in _STOPWORDS and len(w) > 2]
-    # de-duplicate while keeping the longest, most specific words
     seen: list[str] = []
     for word in sorted(content, key=len, reverse=True):
         if word not in seen:
             seen.append(word)
     return seen[:limit]
+
+
+def statutory_terms(question: str) -> list[str]:
+    """Statutory phrasings for the words the user actually used."""
+    words = set(re.findall(r"[a-zA-Z][a-zA-Z-]+", question.lower()))
+    phrases: list[str] = []
+    for word in words:
+        for phrase in GLOSSARY.get(word, ()):
+            if phrase not in phrases:
+                phrases.append(phrase)
+    return phrases
 
 
 def llm_rewrites(question: str, max_variants: int = 2) -> list[str]:
@@ -69,7 +140,7 @@ def llm_rewrites(question: str, max_variants: int = 2) -> list[str]:
     )
     if reply["error"] or not reply["text"]:
         return []
-    lines = [line.strip(" -•\t") for line in reply["text"].splitlines()]
+    lines = [line.strip(" -\u2022\t") for line in reply["text"].splitlines()]
     cleaned = [line for line in lines if 3 <= len(line) <= 200]
     return cleaned[:max_variants]
 
@@ -77,10 +148,16 @@ def llm_rewrites(question: str, max_variants: int = 2) -> list[str]:
 def plan_queries(question: str, use_llm: bool = True) -> list[dict]:
     """Propose search phrasings, cheapest and most faithful first.
 
-    The original question always goes first: rewriting is a fallback, not a
-    replacement, because a rewrite can drift away from what the user meant.
+    Order matters. The original question always goes first, because a rewrite can
+    drift from what the user meant. The statutory phrasing comes next, since it
+    costs one local search and fixes vocabulary mismatch. Key terms and model
+    rewrites follow.
     """
     plan: list[dict] = [{"query": question, "source": "original"}]
+
+    phrases = statutory_terms(question)
+    if phrases:
+        plan.append({"query": " ".join(phrases), "source": "statutory terms"})
 
     terms = key_terms(question)
     if terms:
@@ -90,7 +167,6 @@ def plan_queries(question: str, use_llm: bool = True) -> list[dict]:
         for variant in llm_rewrites(question):
             plan.append({"query": variant, "source": "llm rewrite"})
 
-    # keep order, drop duplicates, respect the attempt budget
     unique: list[dict] = []
     seen: set[str] = set()
     for item in plan:
@@ -108,24 +184,32 @@ def collect_evidence(
 ) -> dict:
     """Run the loop and return the best passages plus a trace of what happened.
 
-    Returns {"hits": [...], "trace": [...], "accepted": bool}.
-    An empty hits list with accepted False means: refuse, do not answer.
+    Returns {"hits", "trace", "accepted"}. An empty hits list with accepted False
+    means: refuse, do not answer.
     """
     top_k = top_k or config.TOP_K
+
     if not config.AGENT_ENABLED:
         hits = retriever.search(question, top_k=top_k)
+        accepted = bool(hits) and hits[0]["distance"] <= config.MAX_DISTANCE
         return {
             "hits": hits,
-            "accepted": bool(hits) and hits[0]["distance"] <= config.MAX_DISTANCE,
-            "trace": [{"step": 1, "query": question, "source": "original",
-                       "top_score": hits[0]["score"] if hits else None,
-                       "top_page": hits[0]["page"] if hits else None,
-                       "accepted": bool(hits) and hits[0]["distance"] <= config.MAX_DISTANCE}],
+            "accepted": accepted,
+            "trace": [
+                {
+                    "step": 1,
+                    "query": question,
+                    "source": "original",
+                    "top_score": hits[0]["score"] if hits else None,
+                    "top_page": hits[0]["page"] if hits else None,
+                    "accepted": accepted,
+                }
+            ],
         }
 
     plan = plan_queries(question, use_llm=use_llm)
     trace: list[dict] = []
-    best: dict | None = None
+    best: list[dict] = []
 
     for step, item in enumerate(plan, start=1):
         hits = retriever.search(item["query"], top_k=top_k)
@@ -143,12 +227,12 @@ def collect_evidence(
         if accepted:
             best = hits
             break
-        # keep the closest result seen so far in case nothing is accepted
-        if hits and (best is None or hits[0]["score"] > best[0]["score"]):
+        # keep the closest set seen so far, so a refusal can still show evidence
+        if hits and (not best or hits[0]["score"] > best[0]["score"]):
             best = hits
 
     return {
-        "hits": best or [],
+        "hits": best,
         "accepted": any(step["accepted"] for step in trace),
         "trace": trace,
     }

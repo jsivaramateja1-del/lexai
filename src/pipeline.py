@@ -59,12 +59,18 @@ def answer_question(
         reply = generator.call_llm(messages)
         llm_ms = int(reply["latency_s"] * 1000)
         if reply["error"]:
+            # Distinct mode, so the UI and the log can tell "the model was never
+            # called" apart from "the model was called and failed".
             answer = generator.extractive_answer(question, hits)
-            mode, error = "extractive", reply["error"]
-            answer = f"(Model unavailable, showing source passages instead.)\n\n{answer}"
+            mode, error = "llm_error", reply["error"]
+            answer = (
+                f"**Model unavailable — showing source passages instead.**\n\n"
+                f"`{reply['error'][:200]}`\n\n{answer}"
+            )
         else:
             answer, mode, error = reply["text"], "llm", ""
     else:
+        # Quote mode: no key configured, or LLM_ENABLED is off. Cannot hallucinate.
         answer, mode, error = generator.extractive_answer(question, hits), "extractive", ""
 
     result = _result(
