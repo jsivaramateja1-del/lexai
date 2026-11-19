@@ -26,7 +26,7 @@ from src.config import (
     SARVAM_MODEL,
 )
 
-SYSTEM_PROMPT = """You are IP-SAKTI Sahayak, an assistant for Indian intellectual
+SYSTEM_PROMPT = """You are LexAI, an assistant for Indian intellectual
 property information.
 
 Rules you must follow:
