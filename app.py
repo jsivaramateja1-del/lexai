@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from src import agent, retriever
+from src import agent, hybrid, retriever
 from src.config import (
     AGENT_ENABLED,
     DISCLAIMER,
@@ -197,7 +197,7 @@ def sidebar() -> None:
         st.markdown(f"<p class='lex-note'>{DISCLAIMER}</p>", unsafe_allow_html=True)
 
 
-def source_cards(passages: list[dict]) -> None:
+def source_cards(passages: list[dict], question: str = "") -> None:
     if not passages:
         return
     with st.expander(f"Sources ({len(passages)})", expanded=False):
@@ -206,8 +206,9 @@ def source_cards(passages: list[dict]) -> None:
             "the right one because it contains the exact statutory phrase.</p>",
             unsafe_allow_html=True,
         )
+        needles = agent.statutory_terms(question) + agent.key_terms(question)
         for hit in passages:
-            snippet = " ".join(hit["text"].split())[:420]
+            snippet = hybrid.focus_snippet(hit["text"], needles)
             st.markdown(
                 f"""
                 <div class="src">
@@ -272,7 +273,7 @@ def render_message(message: dict) -> None:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if message.get("sources"):
-            source_cards(message["passages"])
+            source_cards(message["passages"], message.get("question", ""))
         if message.get("trace"):
             trace_panel(message)
 
@@ -291,7 +292,7 @@ def run(question: str) -> None:
                 return
 
         st.markdown(result["answer"])
-        source_cards(result["passages"])
+        source_cards(result["passages"], question)
         trace_panel(result)
         st.caption(
             f"{result['mode']} · retrieval {result['retrieval_ms']} ms · "
@@ -312,6 +313,7 @@ def run(question: str) -> None:
         {
             "role": "assistant",
             "content": result["answer"],
+            "question": question,
             "sources": result["sources"],
             "passages": result["passages"],
             "trace": result.get("trace", []),

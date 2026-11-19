@@ -106,3 +106,16 @@ def test_exact_phrase_tier_ignores_short_queries():
              {"chunk_id": "b", "text": "patents", "rrf": 0.03, "matched_by": "vector"}]
     out = hybrid.prefer_exact_phrase(fused, "trade mark")
     assert [item["chunk_id"] for item in out] == ["a", "b"]   # order untouched
+
+
+def test_focus_snippet_centres_on_the_matching_phrase():
+    text = ("(h) a method of agriculture or horticulture; " * 6) + \
+           "(k) a mathematical or business method or a computer programme per se or algorithms;"
+    snippet = hybrid.focus_snippet(text, ["computer programme per se"])
+    assert "computer programme per se" in snippet
+    assert snippet.startswith("…")        # the window starts mid-chunk, not at the opening
+
+
+def test_focus_snippet_falls_back_to_the_opening_lines():
+    snippet = hybrid.focus_snippet("nothing relevant here at all", ["absent phrase"])
+    assert snippet.startswith("nothing relevant")

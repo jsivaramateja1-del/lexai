@@ -163,6 +163,30 @@ def prefer_exact_phrase(fused: list[dict], query: str, min_words: int = 3) -> li
     return exact + rest
 
 
+def focus_snippet(text: str, needles: list[str], width: int = 320) -> str:
+    """A window of `text` centred on the phrase that made it relevant.
+
+    A chunk can be 900 characters and the matching clause can sit at the end, so
+    showing the opening lines makes a correct citation look wrong. This shows the
+    words the user is checking for.
+    """
+    flat = " ".join(text.split())
+    lowered = flat.lower()
+    for needle in needles:
+        needle = " ".join((needle or "").lower().split())
+        if not needle:
+            continue
+        position = lowered.find(needle)
+        if position == -1:
+            continue
+        start = max(0, position - width // 2)
+        end = min(len(flat), position + len(needle) + width // 2)
+        prefix = "… " if start > 0 else ""
+        suffix = " …" if end < len(flat) else ""
+        return f"{prefix}{flat[start:end]}{suffix}"
+    return flat[: width + 120] + (" …" if len(flat) > width + 120 else "")
+
+
 # ------------------------------------------------------------- lexical evidence
 def lexical_evidence(text: str, phrases: list[str], question: str,
                      min_coverage: float = 0.75) -> float:

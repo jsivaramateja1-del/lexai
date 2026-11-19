@@ -120,6 +120,7 @@ def test_system_prompt_forbids_appending_the_refusal_to_an_answer():
     assert "Never append the refusal sentence" in flat
     assert "answer that part" in flat
     assert "cannot answer the question at all" in flat
+    assert "Keep statutory qualifiers exactly" in flat
 
 
 def test_context_numbers_every_passage_so_citations_are_checkable():

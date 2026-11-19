@@ -39,8 +39,11 @@ Rules you must follow:
 4. If the passages cannot answer the question at all, reply with exactly:
    "The provided documents do not cover this. I can only answer from the
    ingested IP documents." Do not use outside knowledge.
-5. Never give legal advice or predict an outcome. Explain what the documents say.
-6. Be concise and use plain language a student or founder can follow."""
+5. Keep statutory qualifiers exactly. If a passage excludes "a computer programme
+   per se", do not restate it as "software": the words "per se" limit the
+   exclusion and changing them changes the law. Quote the qualifier.
+6. Never give legal advice or predict an outcome. Explain what the documents say.
+7. Be concise and use plain language a student or founder can follow."""
 
 
 def build_context(hits: list[dict]) -> str:
