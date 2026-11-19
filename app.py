@@ -47,7 +47,14 @@ CSS = """
 }
 .stApp{background:var(--ground);color:var(--ink);}
 html,body,[class*="css"]{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;}
-#MainMenu,footer,header{visibility:hidden;}
+/* Hide the chrome, but keep the header alive: it holds the sidebar toggle.
+   Hiding `header` outright made a collapsed sidebar impossible to reopen. */
+#MainMenu,footer{visibility:hidden;}
+[data-testid="stToolbar"]{visibility:hidden;}
+[data-testid="stDecoration"]{display:none;}
+[data-testid="stHeader"]{background:transparent;}
+[data-testid="stSidebarCollapseButton"]{visibility:visible !important;}
+[data-testid="stSidebarCollapsedControl"]{visibility:visible !important;}
 .block-container{padding-top:2.2rem;max-width:1080px;}
 
 /* brand header */
