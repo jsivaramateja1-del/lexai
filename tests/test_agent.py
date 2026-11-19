@@ -86,9 +86,45 @@ def test_agent_gives_up_and_reports_no_evidence(monkeypatch):
 
 def test_trace_is_human_readable():
     trace = [{"step": 1, "query": "what is not patentable", "source": "original",
-              "top_score": 0.672, "top_page": 9, "accepted": True}]
+              "top_score": 0.672, "top_page": 9, "level": 2, "accepted": True}]
     text = agent.describe_trace(trace)
-    assert "original" in text and "0.672" in text and "accepted" in text
+    assert "original" in text and "0.672" in text and "strong" in text
+
+
+def test_a_provisional_hit_does_not_end_the_search(monkeypatch):
+    """The real failure: 0.659 (distance 0.341) passed the threshold and stopped the loop."""
+    monkeypatch.setattr(config, "MAX_DISTANCE", 0.35)
+    monkeypatch.setattr(config, "STRONG_DISTANCE", 0.28)
+    search, calls = _stub_retriever([0.659, 0.80])
+    monkeypatch.setattr(agent.retriever, "search", search)
+    out = agent.collect_evidence("can I patent software", use_llm=False)
+    assert len(out["trace"]) == 2            # kept searching past the borderline hit
+    assert out["trace"][0]["level"] == 1
+    assert out["trace"][1]["level"] == 2
+    assert calls["n"] == 2
+
+
+def test_a_provisional_hit_is_still_usable_when_nothing_better_arrives(monkeypatch):
+    monkeypatch.setattr(config, "MAX_DISTANCE", 0.35)
+    monkeypatch.setattr(config, "STRONG_DISTANCE", 0.28)
+    search, _ = _stub_retriever([0.659, 0.10, 0.05])
+    monkeypatch.setattr(agent.retriever, "search", search)
+    out = agent.collect_evidence("can I patent software", use_llm=False)
+    assert out["accepted"] is True
+    assert out["strong"] is False
+    assert out["hits"][0]["score"] == 0.659
+
+
+def test_verbatim_statutory_phrase_is_strong_evidence(monkeypatch):
+    def search(question, top_k=5):
+        return [{"chunk_id": "k", "text": "(k) a computer programme per se or algorithms",
+                 "source": "a.pdf", "page": 10, "distance": 0.60, "score": 0.40,
+                 "matched_by": "keyword"}]
+
+    monkeypatch.setattr(agent.retriever, "search", search)
+    out = agent.collect_evidence("can I patent software", use_llm=False)
+    assert out["accepted"] is True and out["strong"] is True
+    assert len(out["trace"]) == 1
 
 
 def test_glossary_maps_software_to_statutory_language():

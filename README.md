@@ -123,7 +123,7 @@ Real numbers from the current build, one statute (Patents Act, 1970, as amended 
 | Embedding model | paraphrase-multilingual-MiniLM-L12-v2, local, 384 dimensions |
 | Rebuild time | ~22 s |
 | Refusal threshold | cosine distance 0.35 (similarity 0.65), calibrated from test questions |
-| Unit tests | 39 passing, plus one end-to-end smoke check |
+| Unit tests | 42 passing, plus one end-to-end smoke check |
 | Cost per answered question | roughly 2 paise at introductory Sarvam pricing |
 
 Chunks are cut at clause, sentence or word boundaries, never mid-word: an exact phrase like
@@ -170,10 +170,19 @@ rather than by score, so a cosine distance and a TF-IDF weight never need a shar
 | Vector (sentence-transformers) | paraphrase, synonyms, meaning | exact rare wording |
 | Keyword (TF-IDF, 1-3 word n-grams) | statutory phrases, section wording | paraphrase |
 
-The relevance guard also gained a second route. A passage is accepted when its cosine
-distance is under the threshold **or** when it contains a statutory phrase the question maps
-to, because verbatim legal wording is stronger evidence than a mediocre similarity score.
-Both switches are configurable: `HYBRID_ENABLED`, `LEXICAL_ACCEPT`.
+The relevance guard has three levels, not two:
+
+| Level | Test | Effect |
+| --- | --- | --- |
+| Strong | contains the statutory phrase, or distance ≤ `STRONG_DISTANCE` (0.28) | answer, and stop searching |
+| Provisional | distance ≤ `MAX_DISTANCE` (0.35) | keep as a fallback, keep searching |
+| Reject | neither | discard |
+
+The middle level exists because of a measured failure: "can I patent software" returned page 29
+at 0.659 similarity, which cleared the threshold by a hair, so the agent stopped before trying
+the statutory phrasing that would have found Section 3(k) on page 10. A barely-passing match is
+now treated as a fallback rather than a finish line. Switches: `HYBRID_ENABLED`,
+`LEXICAL_ACCEPT`, `STRONG_DISTANCE`.
 
 ## Answer modes
 

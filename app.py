@@ -92,7 +92,7 @@ html,body,[class*="css"]{font-family:'Inter','Segoe UI',system-ui,-apple-system,
 .trace-src{color:var(--accent);letter-spacing:.02em;}
 .trace-q{color:var(--ink-2);}
 .trace-score{color:var(--ink);font-variant-numeric:tabular-nums;}
-.ok{color:var(--good);} .no{color:var(--bad);}
+.ok{color:var(--good);} .no{color:var(--bad);} .warn{color:var(--accent);}
 
 /* sidebar + controls */
 section[data-testid="stSidebar"]{background:var(--panel);border-right:1px solid var(--line);}
@@ -222,7 +222,12 @@ def trace_panel(result: dict) -> None:
         rows = []
         for step in trace:
             score = f"{step['top_score']:.3f}" if step["top_score"] is not None else "n/a"
-            verdict = "<span class='ok'>accepted</span>" if step["accepted"] else "<span class='no'>rejected</span>"
+            level = step.get("level", 0)
+            verdict = (
+                "<span class='ok'>strong</span>" if level >= 2
+                else "<span class='warn'>provisional</span>" if level == 1
+                else "<span class='no'>rejected</span>"
+            )
             via = step.get("matched_by") or "vector"
             rows.append(
                 f"<div class='trace-row'><span class='trace-step'>{step['step']}</span>"

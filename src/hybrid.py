@@ -167,6 +167,32 @@ def lexical_evidence(text: str, phrases: list[str], question: str,
     return min(0.9, present / len(words))
 
 
+def accept_level(hit: dict, question: str, phrases: list[str]) -> int:
+    """How good is this hit?  2 = strong, 1 = provisional, 0 = reject.
+
+    Strong means: the passage contains the statutory phrase the question maps to,
+    or the cosine distance is comfortably under the threshold. Provisional means
+    it merely passes. The distinction is what stops a borderline page from ending
+    the search before a better query has been tried.
+    """
+    if hit is None:
+        return 0
+
+    if config.LEXICAL_ACCEPT and lexical_evidence(
+        hit.get("text", ""), phrases, question
+    ) >= 0.999:
+        return 2
+
+    distance = hit.get("distance")
+    if distance is None:
+        return 0
+    if distance <= config.STRONG_DISTANCE:
+        return 2
+    if distance <= config.MAX_DISTANCE:
+        return 1
+    return 0
+
+
 def should_accept(hit: dict, question: str, phrases: list[str]) -> bool:
     """The relevance guard, with lexical evidence allowed to rescue a weak score.
 
@@ -175,11 +201,4 @@ def should_accept(hit: dict, question: str, phrases: list[str]) -> bool:
     evidence than a mediocre cosine score - and this is precisely the case that
     pure vector search gets wrong.
     """
-    if hit is None:
-        return False
-    distance = hit.get("distance")
-    if distance is not None and distance <= config.MAX_DISTANCE:
-        return True
-    if not config.LEXICAL_ACCEPT:
-        return False
-    return lexical_evidence(hit.get("text", ""), phrases, question) >= 0.999
+    return accept_level(hit, question, phrases) >= 1

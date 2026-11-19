@@ -184,18 +184,20 @@ def collect_evidence(
 ) -> dict:
     """Run the loop and return the best passages plus a trace of what happened.
 
-    Returns {"hits", "trace", "accepted"}. An empty hits list with accepted False
-    means: refuse, do not answer.
+    Returns {"hits", "trace", "accepted", "strong"}. `accepted` False means: refuse,
+    do not answer. `strong` False with `accepted` True means the answer rests on a
+    provisional match - usable, but worth showing as such.
     """
     top_k = top_k or config.TOP_K
+    phrases = statutory_terms(question)
 
     if not config.AGENT_ENABLED:
-        phrases = statutory_terms(question)
         hits = retriever.search(question, top_k=top_k)
-        accepted = bool(hits) and hybrid.should_accept(hits[0], question, phrases)
+        level = hybrid.accept_level(hits[0], question, phrases) if hits else 0
         return {
             "hits": hits,
-            "accepted": accepted,
+            "accepted": level >= 1,
+            "strong": level >= 2,
             "trace": [
                 {
                     "step": 1,
@@ -203,19 +205,21 @@ def collect_evidence(
                     "source": "original",
                     "top_score": hits[0]["score"] if hits else None,
                     "top_page": hits[0]["page"] if hits else None,
-                    "accepted": accepted,
+                    "matched_by": hits[0].get("matched_by", "vector") if hits else "",
+                    "level": level,
+                    "accepted": level >= 1,
                 }
             ],
         }
 
     plan = plan_queries(question, use_llm=use_llm)
-    phrases = statutory_terms(question)
     trace: list[dict] = []
     best: list[dict] = []
+    best_level = 0
 
     for step, item in enumerate(plan, start=1):
         hits = retriever.search(item["query"], top_k=top_k)
-        accepted = bool(hits) and hybrid.should_accept(hits[0], question, phrases)
+        level = hybrid.accept_level(hits[0], question, phrases) if hits else 0
         trace.append(
             {
                 "step": step,
@@ -223,19 +227,29 @@ def collect_evidence(
                 "source": item["source"],
                 "top_score": hits[0]["score"] if hits else None,
                 "top_page": hits[0]["page"] if hits else None,
-                "accepted": accepted,
+                "matched_by": hits[0].get("matched_by", "vector") if hits else "",
+                "level": level,
+                "accepted": level >= 1,
             }
         )
-        if accepted:
-            best = hits
+
+        if hits:
+            better = level > best_level or (
+                level == best_level and (not best or hits[0]["score"] > best[0]["score"])
+            )
+            if better:
+                best, best_level = hits, level
+
+        # Only a strong match ends the search. A provisional match is kept as a
+        # fallback and the loop moves on: that is how the statutory phrasing gets
+        # a chance even when the first attempt barely cleared the threshold.
+        if level >= 2:
             break
-        # keep the closest set seen so far, so a refusal can still show evidence
-        if hits and (not best or hits[0]["score"] > best[0]["score"]):
-            best = hits
 
     return {
         "hits": best,
-        "accepted": any(step["accepted"] for step in trace),
+        "accepted": best_level >= 1,
+        "strong": best_level >= 2,
         "trace": trace,
     }
 
@@ -245,7 +259,7 @@ def describe_trace(trace: list[dict]) -> str:
     parts = []
     for step in trace:
         score = f"{step['top_score']:.3f}" if step["top_score"] is not None else "n/a"
-        mark = "accepted" if step["accepted"] else "rejected"
+        mark = {2: "strong", 1: "provisional", 0: "rejected"}.get(step.get("level", 0), "rejected")
         via = step.get("matched_by") or "vector"
         parts.append(f"{step['source']} '{step['query'][:60]}' -> {score} via {via} {mark}")
     return " | ".join(parts)

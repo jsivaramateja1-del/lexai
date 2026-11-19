@@ -46,6 +46,12 @@ MAX_ATTEMPTS = int(os.getenv("MAX_ATTEMPTS", "4"))
 # Cosine distance above which we refuse to answer ("not in the knowledge base").
 MAX_DISTANCE = float(os.getenv("MAX_DISTANCE", "0.75"))
 
+# A match this close stops the agent immediately. Between STRONG_DISTANCE and
+# MAX_DISTANCE the hit is "provisional": usable as a fallback, but not good
+# enough to stop searching, because a barely-passing page is how a false accept
+# happens (0.659 similarity once stopped the loop before it tried the right query).
+STRONG_DISTANCE = float(os.getenv("STRONG_DISTANCE", "0.28"))
+
 # --------------------------------------------------------------------- LLM
 # VERIFY EVERY VALUE BELOW IN THE OFFICIAL SARVAM DOCS before trusting it.
 # Model names, endpoints and limits change; this file is the only place to edit.
