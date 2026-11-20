@@ -15,6 +15,8 @@ the Copyright Act, rules, fee schedules and examination guidelines. General-purp
 answer such questions fluently and sometimes wrongly. In a legal context, a confident wrong
 answer is worse than no answer.
 
+![Architecture: offline indexing on top, the per-question pipeline below](docs/architecture.png)
+
 ## The approach
 
 Retrieval-Augmented Generation (RAG): the model never answers from memory. It answers from

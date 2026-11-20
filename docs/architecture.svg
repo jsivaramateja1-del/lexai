@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="700" viewBox="0 0 1240 700" font-family="Inter, Segoe UI, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8A9099"/>
+    </marker>
+    <style>
+      .box { fill:#FFFFFF; stroke:#D5D8DC; stroke-width:1.5; }
+      .box-accent { fill:#FDF7EC; stroke:#C79A3C; stroke-width:2; }
+      .box-dark { fill:#1B1F24; stroke:#1B1F24; }
+      .t { fill:#1B1F24; font-size:15px; font-weight:600; }
+      .t-dark { fill:#F4F2EE; font-size:15px; font-weight:600; }
+      .s { fill:#5A6470; font-size:12.5px; }
+      .s-dark { fill:#AEB6BF; font-size:12.5px; }
+      .lbl { fill:#8A9099; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; }
+      .flow { stroke:#8A9099; stroke-width:1.6; fill:none; marker-end:url(#arrow); }
+      .flow-accent { stroke:#C79A3C; stroke-width:2; fill:none; marker-end:url(#arrow); }
+      .lane { fill:#F6F7F8; stroke:#E6E8EA; }
+    </style>
+  </defs>
+
+  <rect width="1240" height="700" fill="#FFFFFF"/>
+
+  <text x="40" y="46" class="t" font-size="21">LexAI — how a question becomes a cited answer</text>
+  <text x="40" y="70" class="s">Two statutes indexed, 629 chunks. Nothing reaches the model that was not first retrieved.</text>
+
+  <!-- offline lane -->
+  <rect x="40" y="96" width="1160" height="150" rx="8" class="lane"/>
+  <text x="58" y="120" class="lbl">Offline · runs once per document</text>
+
+  <rect x="64" y="134" width="190" height="88" rx="6" class="box"/>
+  <text x="80" y="160" class="t">PDF documents</text>
+  <text x="80" y="181" class="s">Patents Act, 1970</text>
+  <text x="80" y="199" class="s">Trade Marks Act, 1999</text>
+
+  <rect x="300" y="134" width="200" height="88" rx="6" class="box"/>
+  <text x="316" y="160" class="t">Ingest + chunk</text>
+  <text x="316" y="181" class="s">clean, page-scoped,</text>
+  <text x="316" y="199" class="s">900 / 150, word-aligned</text>
+
+  <rect x="546" y="134" width="196" height="88" rx="6" class="box"/>
+  <text x="562" y="160" class="t">Embed</text>
+  <text x="562" y="181" class="s">MiniLM, 384-dim,</text>
+  <text x="562" y="199" class="s">local, multilingual</text>
+
+  <rect x="788" y="126" width="186" height="46" rx="6" class="box"/>
+  <text x="804" y="154" class="t">Vector index</text>
+
+  <rect x="788" y="182" width="186" height="46" rx="6" class="box"/>
+  <text x="804" y="210" class="t">Keyword index</text>
+
+  <rect x="1012" y="134" width="164" height="88" rx="6" class="box"/>
+  <text x="1028" y="160" class="t">ChromaDB</text>
+  <text x="1028" y="181" class="s">629 chunks</text>
+  <text x="1028" y="199" class="s">+ TF-IDF 1–3 grams</text>
+
+  <path class="flow" d="M 254 178 L 296 178"/>
+  <path class="flow" d="M 500 178 L 542 178"/>
+  <path class="flow" d="M 742 168 L 784 150"/>
+  <path class="flow" d="M 742 188 L 784 204"/>
+  <path class="flow" d="M 974 149 L 1008 165"/>
+  <path class="flow" d="M 974 205 L 1008 190"/>
+
+  <!-- online lane -->
+  <rect x="40" y="266" width="1160" height="392" rx="8" class="lane"/>
+  <text x="58" y="290" class="lbl">Online · every question</text>
+
+  <rect x="64" y="306" width="150" height="76" rx="6" class="box-dark"/>
+  <text x="80" y="332" class="t-dark">Question</text>
+  <text x="80" y="353" class="s-dark">plain language</text>
+  <text x="80" y="370" class="s-dark">from the chat UI</text>
+
+  <rect x="248" y="298" width="286" height="212" rx="6" class="box-accent"/>
+  <text x="266" y="324" class="t">Agent — plan, act, observe, re-act</text>
+  <text x="266" y="348" class="s">1 · question verbatim</text>
+  <text x="266" y="368" class="s">2 · statutory phrasing (glossary)</text>
+  <text x="266" y="388" class="s">3 · key terms, stopwords removed</text>
+  <text x="266" y="408" class="s">4 · model rewrite (when a key exists)</text>
+  <text x="266" y="440" class="s">Stops only on strong evidence,</text>
+  <text x="266" y="458" class="s">max 4 attempts, every step traced.</text>
+  <text x="266" y="486" class="s">src/agent.py</text>
+
+  <rect x="568" y="306" width="200" height="88" rx="6" class="box"/>
+  <text x="584" y="332" class="t">Hybrid search</text>
+  <text x="584" y="353" class="s">vector + keyword,</text>
+  <text x="584" y="371" class="s">rank fusion, exact</text>
+  <text x="584" y="389" class="s">phrase tier</text>
+
+  <rect x="568" y="416" width="200" height="94" rx="6" class="box-accent"/>
+  <text x="584" y="442" class="t">Relevance guard</text>
+  <text x="584" y="463" class="s">strong · provisional</text>
+  <text x="584" y="481" class="s">· rejected</text>
+  <text x="584" y="500" class="s">src/hybrid.py</text>
+
+  <rect x="808" y="306" width="200" height="88" rx="6" class="box"/>
+  <text x="824" y="332" class="t">Prompt</text>
+  <text x="824" y="353" class="s">numbered passages,</text>
+  <text x="824" y="371" class="s">cite or refuse,</text>
+  <text x="824" y="389" class="s">keep qualifiers</text>
+
+  <rect x="808" y="416" width="200" height="94" rx="6" class="box-dark"/>
+  <text x="824" y="442" class="t-dark">Sarvam LLM</text>
+  <text x="824" y="463" class="s-dark">sarvam-105b-conversations</text>
+  <text x="824" y="481" class="s-dark">one call, then one</text>
+  <text x="824" y="500" class="s-dark">corrective attempt</text>
+
+  <rect x="1048" y="306" width="128" height="88" rx="6" class="box"/>
+  <text x="1064" y="332" class="t">Answer</text>
+  <text x="1064" y="353" class="s">claim plus</text>
+  <text x="1064" y="371" class="s">document, page</text>
+  <text x="1064" y="389" class="s">and trace</text>
+
+  <rect x="1048" y="416" width="128" height="94" rx="6" class="box"/>
+  <text x="1064" y="442" class="t">Log</text>
+  <text x="1064" y="463" class="s">question, sources,</text>
+  <text x="1064" y="481" class="s">latency, feedback</text>
+  <text x="1064" y="500" class="s">CSV for Power BI</text>
+
+  <path class="flow-accent" d="M 214 344 L 244 344"/>
+  <path class="flow-accent" d="M 534 350 L 564 350"/>
+  <path class="flow" d="M 668 394 L 668 412"/>
+  <path class="flow-accent" d="M 768 440 L 804 440"/>
+  <path class="flow" d="M 908 394 L 908 412"/>
+  <path class="flow" d="M 1008 430 L 1028 430 L 1028 350 L 1044 350"/>
+  <path class="flow" d="M 1008 470 L 1044 470"/>
+  <path class="flow" d="M 400 510 L 400 540 L 1112 540 L 1112 514"/>
+
+  <!-- refusal path -->
+  <rect x="248" y="556" width="286" height="72" rx="6" class="box"/>
+  <text x="266" y="582" class="t">Refusal path</text>
+  <text x="266" y="603" class="s">Nothing passes the guard: say so,</text>
+  <text x="266" y="620" class="s">before any model call. No credits spent.</text>
+  <path class="flow" d="M 664 512 L 664 592 L 538 592"/>
+
+  <text x="64" y="648" class="s" font-style="italic">The guard is the product: a threshold bounds the damage, it does not eliminate it.</text>
+</svg>
