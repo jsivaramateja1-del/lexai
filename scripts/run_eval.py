@@ -128,7 +128,12 @@ def main() -> None:
         return
 
     print(f"Mode: {'LLM answers' if args.llm else 'quote mode'} · top_k={top_k} · "
-          f"{len(questions)} questions · {indexed} chunks indexed\n")
+          f"{len(questions)} questions · {indexed} chunks indexed")
+    if not args.llm:
+        print("Note: quote mode disables the model-rewrite phrasing and the corrective retry, so the\n"
+              "      refusal numbers below are pessimistic. Run with --llm for the system as shipped.\n")
+    else:
+        print()
     print(f"{'id':<5}{'pages':<16}{'hit':<5}{'top1':<6}{'refused':<9}{'ms':<7}question")
     print("-" * 92)
 
