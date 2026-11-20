@@ -219,6 +219,11 @@ def collect_evidence(
 
     for step, item in enumerate(plan, start=1):
         hits = retriever.search(item["query"], top_k=top_k)
+        # Any phrasing may certify a hit by verbatim containment, including a model
+        # rewrite: "how long does a patent last" is answered only because the model
+        # rewrote it as "TERM OF PATENT", a section heading. The cost is that a
+        # rewrite can also certify a merely on-topic passage; that trade is visible
+        # in the evaluation, and precision is protected by the distance threshold.
         level = hybrid.accept_level(
             hits[0], question, phrases, attempt_query=item["query"]
         ) if hits else 0

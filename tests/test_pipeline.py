@@ -173,4 +173,18 @@ def test_the_retry_is_not_repeated_forever(monkeypatch):
     monkeypatch.setattr(pipeline.generator, "call_llm", call_llm)
     result = pipeline.answer_question("can I patent software")
     assert calls["n"] == 2                       # one corrective attempt, no loop
-    assert result["mode"] == "llm"               # an honest refusal is still returned
+    assert result["mode"] == "no_answer"         # a refusal in words is a refusal
+
+
+def test_a_refusal_in_words_is_not_counted_as_an_answer(monkeypatch):
+    _no_log(monkeypatch)
+    monkeypatch.setattr(pipeline.agent, "collect_evidence", _stub_evidence(True))
+    monkeypatch.setattr(pipeline.generator, "llm_available", lambda: True)
+    monkeypatch.setattr(
+        pipeline.generator, "call_llm",
+        lambda messages, retries=2: {
+            "text": "The provided documents do not cover this. I can only answer from the ingested IP documents.",
+            "latency_s": 0.2, "error": ""},
+    )
+    result = pipeline.answer_question("what is the trademark fee for a small enterprise")
+    assert result["mode"] == "no_answer"

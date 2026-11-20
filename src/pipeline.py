@@ -85,6 +85,10 @@ def answer_question(
                 f"**Model unavailable — showing source passages instead.**\n\n"
                 f"`{reply['error'][:200]}`\n\n{answer}"
             )
+        elif generator.REFUSAL_MARKER in (reply["text"] or "").lower()[:120]:
+            # The model declined in words. Counting this as an answer inflated the
+            # answered rate and depressed the citation rate in the evaluation.
+            answer, mode, error = reply["text"], "no_answer", ""
         else:
             answer, mode, error = reply["text"], "llm", ""
     else:
