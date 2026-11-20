@@ -149,3 +149,25 @@ def test_plan_without_glossary_terms_still_works():
     plan = agent.plan_queries("zzzz qqqq", use_llm=False)
     assert plan[0]["source"] == "original"
     assert all(item["query"] for item in plan)
+
+
+def test_a_matching_rewrite_is_accepted_and_stops_the_loop(monkeypatch):
+    """The real case: 'how long does a patent last' -> rewrite 'TERM OF PATENT' -> page 30."""
+    monkeypatch.setattr(config, "MAX_DISTANCE", 0.35)
+    monkeypatch.setattr(config, "STRONG_DISTANCE", 0.28)
+
+    def search(question, top_k=5):
+        if "term of patent" in question.lower():
+            return [{"chunk_id": "good", "text": "The term of patent shall be twenty years",
+                     "source": "p.pdf", "page": 30, "distance": 0.667, "score": 0.333,
+                     "matched_by": "keyword+phrase"}]
+        return [{"chunk_id": "bad", "text": "renew the registration of the trade mark",
+                 "source": "t.pdf", "page": 13, "distance": 0.421, "score": 0.579,
+                 "matched_by": "keyword+vector"}]
+
+    monkeypatch.setattr(agent.retriever, "search", search)
+    monkeypatch.setattr(agent, "llm_rewrites", lambda question, max_variants=2: ["TERM OF PATENT"])
+    out = agent.collect_evidence("How long does a patent last?", use_llm=True)
+    assert out["accepted"] is True
+    assert out["hits"][0]["page"] == 30
+    assert any(step["level"] == 2 for step in out["trace"])

@@ -119,3 +119,22 @@ def test_focus_snippet_centres_on_the_matching_phrase():
 def test_focus_snippet_falls_back_to_the_opening_lines():
     snippet = hybrid.focus_snippet("nothing relevant here at all", ["absent phrase"])
     assert snippet.startswith("nothing relevant")
+
+
+def test_the_phrasing_that_matched_counts_as_evidence(monkeypatch):
+    """Observed: the rewrite "TERM OF PATENT" hit page 30 and was still rejected.
+
+    The question shared no words with the passage, but the search phrasing did,
+    and an exact phrase match is exactly what the guard is supposed to credit.
+    """
+    monkeypatch.setattr(config, "MAX_DISTANCE", 0.35)
+    hit = _hit("a", 0.667, text="(1) The term of patent in case of an application shall be twenty years")
+    assert hybrid.accept_level(hit, "How long does a patent last?", [], "TERM OF PATENT") == 2
+    # without the attempt phrasing it is not decisive evidence
+    assert hybrid.accept_level(hit, "How long does a patent last?", []) == 0
+
+
+def test_short_attempt_phrasing_is_still_not_decisive(monkeypatch):
+    monkeypatch.setattr(config, "MAX_DISTANCE", 0.35)
+    hit = _hit("a", 0.70, text="the renewal fee shall be paid")
+    assert hybrid.accept_level(hit, "renewal fee", [], "renewal fee") == 0

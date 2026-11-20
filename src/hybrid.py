@@ -211,7 +211,12 @@ def lexical_evidence(text: str, phrases: list[str], question: str,
     return min(0.9, present / len(words))
 
 
-def accept_level(hit: dict, question: str, phrases: list[str]) -> int:
+def accept_level(
+    hit: dict,
+    question: str,
+    phrases: list[str],
+    attempt_query: str | None = None,
+) -> int:
     """How good is this hit?  2 = strong, 1 = provisional, 0 = reject.
 
     Strong means: the passage contains the statutory phrase the question maps to,
@@ -223,12 +228,23 @@ def accept_level(hit: dict, question: str, phrases: list[str]) -> int:
         return 0
 
     if config.LEXICAL_ACCEPT:
-        haystack = hit.get("text", "").lower()
-        for phrase in phrases:
-            # A short phrase ("trade mark", "renewal fee") is ordinary vocabulary
+        haystack = " ".join(hit.get("text", "").lower().split())
+        # Candidates for "the passage contains the wording we searched for": the
+        # glossary phrase the question maps to, the question itself, and the
+        # search phrasing that produced this hit. That last one matters: the agent
+        # may have rewritten "how long does a patent last" as "TERM OF PATENT",
+        # and if the passage contains that phrasing verbatim, the match is exact
+        # even though the original question shares no words with it.
+        candidates = list(phrases)
+        candidates.append(question)
+        if attempt_query:
+            candidates.append(attempt_query)
+        for candidate in candidates:
+            needle = " ".join((candidate or "").lower().split()).strip(" ?.!,")
+            # Short phrasing ("trade mark", "renewal fee") is ordinary vocabulary
             # and appears across the whole statute. Only specific, multi-word
-            # phrasing ("computer programme per se") is decisive.
-            if len(phrase.split()) >= 3 and phrase.lower() in haystack:
+            # phrasing is decisive.
+            if len(needle.split()) >= 3 and needle in haystack:
                 return 2
 
     distance = hit.get("distance")
@@ -241,7 +257,8 @@ def accept_level(hit: dict, question: str, phrases: list[str]) -> int:
     return 0
 
 
-def should_accept(hit: dict, question: str, phrases: list[str]) -> bool:
+def should_accept(hit: dict, question: str, phrases: list[str],
+                  attempt_query: str | None = None) -> bool:
     """The relevance guard, with lexical evidence allowed to rescue a weak score.
 
     Semantic similarity is the default test. A verbatim statutory phrase is
@@ -249,4 +266,4 @@ def should_accept(hit: dict, question: str, phrases: list[str]) -> bool:
     evidence than a mediocre cosine score - and this is precisely the case that
     pure vector search gets wrong.
     """
-    return accept_level(hit, question, phrases) >= 1
+    return accept_level(hit, question, phrases, attempt_query) >= 1

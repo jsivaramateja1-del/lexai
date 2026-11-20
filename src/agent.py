@@ -219,7 +219,9 @@ def collect_evidence(
 
     for step, item in enumerate(plan, start=1):
         hits = retriever.search(item["query"], top_k=top_k)
-        level = hybrid.accept_level(hits[0], question, phrases) if hits else 0
+        level = hybrid.accept_level(
+            hits[0], question, phrases, attempt_query=item["query"]
+        ) if hits else 0
         trace.append(
             {
                 "step": step,
