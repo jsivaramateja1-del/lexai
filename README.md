@@ -54,6 +54,8 @@ data/documents/*.pdf
 | `src/logger.py` | Query logging to `analytics/queries.csv` |
 | `scripts/ingest.py` | Build/refresh the knowledge base |
 | `scripts/run_eval.py` | Run the evaluation set and report retrieval, refusal and citation rates |
+| `scripts/export_dashboard.py` | Turn the query log into dashboard-ready data with derived columns |
+| `docs/DASHBOARD.md` | Power BI build steps, measures and the five visuals |
 | `eval/questions.json` | Ground truth: questions with expected pages |
 | `tests/` | Unit tests for the AI-free parts (cleaning, chunking) |
 | `landing/` | Responsive landing page with basic SEO |
