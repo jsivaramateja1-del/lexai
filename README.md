@@ -87,7 +87,7 @@ Run the tests:
 pytest -q
 python tests/smoke_check.py
 python tests/selfdrive.py        # whole system, real PDF, 41 checks
-python -m scripts.run_eval       # 29-question evaluation, free in quote mode
+python -m scripts.run_eval       # 39-question evaluation, free in quote mode
 ```
 
 ## Configuration
@@ -106,12 +106,12 @@ them in the official Sarvam documentation — model names and limits change.
 
 Only public documents, each recorded with its source URL and the date it was downloaded:
 
-| Document | Status |
-| --- | --- |
-| The Patents Act, 1970 (as amended) | to be added |
-| The Trade Marks Act, 1999 (as amended) | to be added |
-| The Copyright Act, 1957 (as amended) | to be added |
-| IP office examination guidelines | to be added |
+| Document | Pages | Chunks | Status |
+| --- | --- | --- | --- |
+| The Patents Act, 1970 (as amended to 01-08-2024) | 69 | 358 | indexed |
+| The Trade Marks Act, 1999 | 51 | 271 | indexed |
+| The Copyright Act, 1957 (as amended) | — | — | to be added |
+| IP office examination guidelines | — | — | to be added |
 
 Amendments matter: an answer grounded in a superseded text is still wrong. Each document's
 version and download date will be recorded in `data/documents/SOURCES.md`.
@@ -122,12 +122,12 @@ Real numbers from the current build, one statute (Patents Act, 1970, as amended 
 
 | Measure | Value |
 | --- | --- |
-| Pages extracted | 69 |
-| Chunks indexed | 358 (900 characters, 150 overlap, page-scoped, word-aligned) |
+| Pages extracted | 120 (two statutes) |
+| Chunks indexed | 629 (900 characters, 150 overlap, page-scoped, word-aligned) |
 | Embedding model | paraphrase-multilingual-MiniLM-L12-v2, local, 384 dimensions |
 | Rebuild time | ~22 s |
 | Refusal threshold | cosine distance 0.35 (similarity 0.65), calibrated from test questions |
-| Unit tests | 59 passing, plus a smoke check and a 41-check system test drive |
+| Unit tests | 61 passing, plus a smoke check and a 41-check system test drive |
 | Cost per answered question | roughly 2 paise at introductory Sarvam pricing |
 
 Chunks are cut at clause, sentence or word boundaries, never mid-word: an exact phrase like
@@ -141,8 +141,8 @@ answer, which is why scores are used to rank candidates, never to certify them.
 
 ## Evaluation
 
-`eval/questions.json` holds 29 questions: 24 answerable from the Patents Act and 5 that are not
-(trademark fees, copyright term, designs, trade secrets, US filing fees). Expected pages were
+`eval/questions.json` holds 39 questions across two statutes: 34 answerable and 5 that are not
+(trademark fee amounts, copyright term, designs, trade secrets, US filing fees). Expected pages were
 derived by searching the PDF for each section's wording, not chosen from what the system
 returned — otherwise the set would only measure agreement with itself.
 

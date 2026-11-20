@@ -149,6 +149,7 @@ def main() -> None:
             {
                 "id": item["id"],
                 "question": item["question"],
+                "source": item.get("source", ""),
                 "answerable": item["answerable"],
                 "expected_pages": " ".join(str(p) for p in expected),
                 "retrieved_pages": " ".join(str(p) for p in pages),

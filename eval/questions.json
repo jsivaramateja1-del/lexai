@@ -8,7 +8,8 @@
       "expected_pages": [
         9
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q02",
@@ -17,7 +18,8 @@
       "expected_pages": [
         8
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q03",
@@ -27,7 +29,8 @@
         30,
         31
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q04",
@@ -38,7 +41,8 @@
         12,
         13
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q05",
@@ -49,7 +53,8 @@
         16,
         17
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q06",
@@ -60,7 +65,8 @@
         20,
         21
       ],
-      "note": "chapter V, opposition proceedings"
+      "note": "chapter V, opposition proceedings",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q07",
@@ -71,7 +77,8 @@
         41,
         43
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q08",
@@ -82,7 +89,8 @@
         30,
         31
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q09",
@@ -91,7 +99,8 @@
       "expected_pages": [
         10
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q10",
@@ -102,7 +111,8 @@
         9,
         20
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q11",
@@ -113,7 +123,8 @@
         23,
         24
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q12",
@@ -122,7 +133,8 @@
       "expected_pages": [
         33
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q13",
@@ -133,7 +145,8 @@
         19,
         30
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q14",
@@ -142,7 +155,8 @@
       "expected_pages": [
         28
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q15",
@@ -152,7 +166,8 @@
         50,
         51
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q16",
@@ -163,7 +178,8 @@
         18,
         19
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q17",
@@ -174,7 +190,8 @@
         56,
         57
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q18",
@@ -185,7 +202,8 @@
         26,
         36
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q19",
@@ -196,7 +214,8 @@
         11,
         12
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q20",
@@ -207,7 +226,8 @@
         23,
         36
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q21",
@@ -218,7 +238,8 @@
         47,
         48
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q22",
@@ -227,7 +248,8 @@
       "expected_pages": [
         30
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q23",
@@ -238,7 +260,8 @@
         12,
         13
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q24",
@@ -247,42 +270,168 @@
       "expected_pages": [
         14
       ],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q25",
       "question": "What is the trademark fee for a small enterprise?",
       "answerable": false,
       "expected_pages": [],
-      "note": ""
+      "note": "fee amounts are in the Trade Marks Rules, not the Act — refusal is correct",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q26",
       "question": "How long does copyright last in India?",
       "answerable": false,
       "expected_pages": [],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q27",
       "question": "Can I register an industrial design?",
       "answerable": false,
       "expected_pages": [],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q28",
       "question": "What is the penalty for stealing a trade secret?",
       "answerable": false,
       "expected_pages": [],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
     },
     {
       "id": "Q29",
       "question": "What is the filing fee at the United States patent office?",
       "answerable": false,
       "expected_pages": [],
-      "note": ""
+      "note": "",
+      "source": "Patents_Act_1970.pdf"
+    },
+    {
+      "id": "Q30",
+      "question": "What is a trade mark?",
+      "answerable": true,
+      "expected_pages": [
+        4,
+        5
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q31",
+      "question": "How long does a trade mark registration last?",
+      "answerable": true,
+      "expected_pages": [
+        13,
+        14
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q32",
+      "question": "Can I oppose a trade mark application?",
+      "answerable": true,
+      "expected_pages": [
+        12,
+        13,
+        21
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q33",
+      "question": "What is infringement of a trade mark?",
+      "answerable": true,
+      "expected_pages": [
+        24,
+        27,
+        29
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q34",
+      "question": "What is a collective mark?",
+      "answerable": true,
+      "expected_pages": [
+        5,
+        26,
+        27
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q35",
+      "question": "What is a certification trade mark?",
+      "answerable": true,
+      "expected_pages": [
+        5,
+        20,
+        27
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q36",
+      "question": "What is deceptive similarity?",
+      "answerable": true,
+      "expected_pages": [
+        9,
+        14,
+        29
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q37",
+      "question": "What are the grounds for refusal of registration?",
+      "answerable": true,
+      "expected_pages": [
+        11,
+        12
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q38",
+      "question": "What is passing off?",
+      "answerable": true,
+      "expected_pages": [
+        8,
+        43,
+        44
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
+    },
+    {
+      "id": "Q39",
+      "question": "What is a well-known trade mark?",
+      "answerable": true,
+      "expected_pages": [
+        7,
+        8
+      ],
+      "source": "Trade_Marks_Act_1999.pdf",
+      "note": "Trade Marks Act, 1999"
     }
+  ],
+  "documents": [
+    "Patents_Act_1970.pdf",
+    "Trade_Marks_Act_1999.pdf"
   ]
 }
