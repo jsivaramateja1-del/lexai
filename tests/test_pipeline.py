@@ -123,6 +123,7 @@ def test_system_prompt_forbids_appending_the_refusal_to_an_answer():
     assert "answer that part" in flat
     assert "cannot answer the question at all" in flat
     assert "Keep statutory qualifiers exactly" in flat
+    assert "never claim the documents are silent about a point" in flat
     assert "Never refuse merely because the user" in flat
 
 
