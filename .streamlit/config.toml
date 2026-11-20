@@ -1,0 +1,16 @@
+# Matches the interface theme in app.py so the deployed app looks the same.
+[theme]
+base = "dark"
+primaryColor = "#E0B252"
+backgroundColor = "#0E1114"
+secondaryBackgroundColor = "#161A1F"
+textColor = "#E9E6DF"
+font = "sans serif"
+
+[server]
+headless = true
+# Leave CORS at its secure default: disabling it lets any origin open a
+# WebSocket to the app. Do not turn it off to fix a symptom.
+
+[browser]
+gatherUsageStats = false

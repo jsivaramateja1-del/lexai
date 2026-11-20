@@ -14,6 +14,29 @@ from dotenv import load_dotenv
 # Reads .env sitting next to this project's root. Never commit that file.
 load_dotenv()
 
+
+def _bridge_streamlit_secrets() -> None:
+    """Make hosted secrets behave like environment variables.
+
+    Streamlit Community Cloud does not ship a .env file: it injects secrets through
+    st.secrets. Every module here reads os.environ, so without this bridge a
+    deployed app would silently run in quote mode with no API key.
+    """
+    try:
+        import streamlit as st  # noqa: PLC0415
+    except Exception:                                            # noqa: BLE001
+        return
+    try:
+        for key, value in st.secrets.items():
+            if isinstance(value, str):
+                os.environ.setdefault(key, value)
+    except Exception:                                            # noqa: BLE001
+        # No secrets configured, or called outside a Streamlit runtime.
+        return
+
+
+_bridge_streamlit_secrets()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data" / "documents"
 CHROMA_DIR = BASE_DIR / "chroma_db"
