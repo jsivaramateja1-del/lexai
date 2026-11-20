@@ -51,6 +51,7 @@ def answer_question(
             retrieval_ms=retrieval_ms, total_ms=_elapsed(total_started),
         )
         result["trace"] = trace
+        result["evidence_query"] = ""
         log_query(_log_row(query_id, question, result, best_distance))
         return result
 
@@ -96,6 +97,10 @@ def answer_question(
     )
     result["trace"] = trace
     result["trace_text"] = agent.describe_trace(trace)
+    # The phrasing that produced the accepted evidence. The UI centres the source
+    # snippet on it, so the cited clause is what the reader sees first.
+    winning = next((step for step in trace if step.get("level", 0) >= 2), None)
+    result["evidence_query"] = winning["query"] if winning else ""
     log_query(_log_row(query_id, question, result, best_distance))
     return result
 
